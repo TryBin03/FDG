@@ -1,0 +1,10 @@
+test:
+  value: try
+datasource:
+  type: MySQL
+fdg:
+  table: test_1
+  schema: fdgtest
+  count: 10
+  submit-count: 2500
+  sql-values-count: 10

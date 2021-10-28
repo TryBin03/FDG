@@ -5,5 +5,6 @@ package trybin.fdg.service;
  * @date: 2021/10/27 18:10:39
  * @version: 0.0.1
  */
-public interface DataGenerationService {
+public interface DataGenerateService {
+    void process();
 }

@@ -8,6 +8,7 @@ class FdgApplicationTests {
 
     @Test
     void contextLoads() {
+        System.out.println("ssss");
     }
 
 }
