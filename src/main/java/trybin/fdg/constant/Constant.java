@@ -1,4 +1,4 @@
-package trybin.fdg;
+package trybin.fdg.constant;
 
 public final class Constant {
     public static final String STRING_EMPTY = "";
