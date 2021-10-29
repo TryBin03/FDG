@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import trybin.fdg.dao.SqlExecuteMapper;
 import trybin.fdg.service.SqlExecuteService;
 
@@ -20,12 +21,13 @@ import java.util.*;
  * @version: 0.0.1
  */
 @Slf4j
+@Service("sqlExecuteService")
 public class SqlExecuteServiceImpl implements SqlExecuteService {
 
     private boolean ignorePropertyNotFitFlg = false;
 
     @Autowired
-    private SqlExecuteMapper sqlSiteExecuteMapper;
+    private SqlExecuteMapper sqlExecuteMapper;
 
     class BeanConvertException extends RuntimeException {
         private static final long serialVersionUID = -2855351755428576526L;
@@ -41,22 +43,22 @@ public class SqlExecuteServiceImpl implements SqlExecuteService {
 
     @Override
     public Integer insert(String statement) {
-        return sqlSiteExecuteMapper.insert(statement);
+        return sqlExecuteMapper.insert(statement);
     }
 
     @Override
     public Integer delete(String statement) {
-        return sqlSiteExecuteMapper.delete(statement);
+        return sqlExecuteMapper.delete(statement);
     }
 
     @Override
     public Integer update(String statement) {
-        return sqlSiteExecuteMapper.update(statement);
+        return sqlExecuteMapper.update(statement);
     }
 
     @Override
     public List<Map<String, Object>> selectList(String statement) {
-        return sqlSiteExecuteMapper.selectList(statement);
+        return sqlExecuteMapper.selectList(statement);
     }
 
 

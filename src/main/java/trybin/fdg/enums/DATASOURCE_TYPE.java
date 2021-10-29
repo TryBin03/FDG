@@ -8,5 +8,6 @@ package trybin.fdg.enums;
 public enum DATASOURCE_TYPE {
     MySQL,
     DB2,
-    Oracle
+    Oracle,
+    Sql_Server
 }

@@ -1,5 +1,7 @@
 package trybin.fdg.dao;
 
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  * @date: 2021/10/28 22:42:46
  * @version: 0.0.1
  */
+@Repository
 public interface SqlExecuteMapper {
     Integer insert(String statement);
 

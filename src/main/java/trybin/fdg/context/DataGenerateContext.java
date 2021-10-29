@@ -1,6 +1,9 @@
 package trybin.fdg.context;
 
 import lombok.Data;
+import trybin.fdg.enums.DATASOURCE_TYPE;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author: TryBin
@@ -14,5 +17,7 @@ public class DataGenerateContext {
 
     private Long count;
     private Integer sqlValuesCount;
-    private Long index;
+    private AtomicLong index;
+
+    private DATASOURCE_TYPE datasourceType;
 }

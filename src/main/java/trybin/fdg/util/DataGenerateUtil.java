@@ -1,14 +1,16 @@
 package trybin.fdg.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
-import trybin.fdg.service.SqlExecuteService;
+import trybin.fdg.enums.MySQL_DATA_TYPE;
+import trybin.fdg.exception.DataGenerateException;
 
-import java.sql.SQLException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -18,23 +20,11 @@ import java.util.stream.Collectors;
  */
 public class DataGenerateUtil {
 
-    public static List<Columns> getColumnsVos(DataGenerateContext dataGenerateConText, String getColNameSql) {
+    public static String perfectFindColumnsSql(DataGenerateContext dataGenerateConText, String getColNameSql) {
         List<String> values = new ArrayList<>(2);
         values.add(dataGenerateConText.getSchema());
         values.add(dataGenerateConText.getTable());
-        getColNameSql = StringUtil.replace(getColNameSql, values);
-//        try {
-            return null;
-//            return sqlExecuteService.selectList(getColNameSql, Columns.class);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        throw new NullPointerException();
-    }
-
-    public static List<String> getColName(DataGenerateContext dataGenerateConText, String getColNameSql) {
-        return getColumnsVos(dataGenerateConText, getColNameSql)
-                .stream().map(Columns::getColname).collect(Collectors.toList());
+        return StringUtil.replace(getColNameSql, values);
     }
 
     public static List<String> getColName(List<Columns> columnsVos) {
@@ -48,54 +38,71 @@ public class DataGenerateUtil {
                 .map(Columns::getColname).collect(Collectors.toSet());
     }
 
-    public static Set<String> getKeys(DataGenerateContext dataGenerateConText, String getColNameSql) {
-        return getColumnsVos(dataGenerateConText, getColNameSql)
-                .stream().filter(s -> null != s.getKeyseq())
-                .map(Columns::getColname).collect(Collectors.toSet());
-    }
-
-    public static String createInsertSql(List<String> colNames, Set<String> keys, DataGenerateContext dataGenerateContext) {
+    public static String createInsertSql(List<Columns> columns, Set<String> keys, DataGenerateContext dataGenerateContext) {
         Long count = dataGenerateContext.getCount();
         Integer sqlValuesCount = dataGenerateContext.getSqlValuesCount();
-        Long index = dataGenerateContext.getIndex();
+        AtomicLong index = dataGenerateContext.getIndex();
 
         StringBuffer sqlSb = new StringBuffer();
+        // 拼装字段
         sqlSb.append("INSERT INTO ")
                 .append(dataGenerateContext.getTable()).append(" (");
-        colNames.forEach(colName->sqlSb.append(colName).append(", "));
+        columns.forEach(colName->sqlSb.append(colName.getColname()).append(", "));
         sqlSb.delete(sqlSb.length() - 2, sqlSb.length());
         sqlSb.append(") ");
         sqlSb.append("VALUES ");
 
+        // 拼装值
         for (int i = 0; i < sqlValuesCount; i++) {
             sqlSb.append("(");
-            for (String colName : colNames) {
+            for (Columns column : columns) {
                 sqlSb.append("'");
-                // 含有业务意义的值
-                if (keys.contains(colName)) {
-                    synchronized (index){
-                        sqlSb.append(index);
+                // 主键
+                String typename = column.getTypename();
+                if (keys.contains(column.getColname())) {
+                    // 排除时间类型
+                    if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATE.name(), typename)){
+                        sqlSb.append(DateUtils.formatDate(DateUtils.getDayAfterDate(DateUtils.getDate("1970-01-01"),index.intValue()), DateUtils.FORMAT_YYYY_MM_DD));
+                    } else if(StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIME.name(), typename)) {
+                        sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("00:00:00"),index.intValue()), DateUtils.FORMAT_HH_MM_SS));
+                    } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATETIME.name(), typename) || StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)){
+                        sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("1970-01-01 00:00:00"),index.intValue()),DateUtils.FORMAT_YYYY_MM_DD_HH_MM_SS));
+                    } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.YEAR.name(), typename)){
+                        sqlSb.append(DateUtils.formatDate(DateUtils.getYearAfterDate(DateUtils.getDate("1970"),index.intValue()), DateUtils.FORMAT_YYYY));
+                    }
+                    else {
+                        sqlSb.append(getIndex(index.get(),column.getLength()));
                     }
                 }else {
-                    sqlSb.append("1");
+                    // 排除时间类型
+                    if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATE.name(), typename)){
+                        sqlSb.append("1970-01-01");
+                    } else if(StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIME.name(), typename)) {
+                        sqlSb.append("00:00:00");
+                    } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATETIME.name(), typename) || StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)){
+                        sqlSb.append("1970-01-01 00:00:00");
+                    } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.YEAR.name(), typename)){
+                        sqlSb.append("1970");
+                    }
+                    // 默认插入 1
+                    else {
+                        sqlSb.append("1");
+                    }
                 }
                 sqlSb.append("', ");
             }
             sqlSb.delete(sqlSb.length() - 2,sqlSb.length());
             sqlSb.append("), ");
-            index++;
+            index.set(1 + index.get());
         }
         sqlSb.delete(sqlSb.length() - 2,sqlSb.length());
-        synchronized (index){
-            dataGenerateContext.setIndex(index);
-        }
+        dataGenerateContext.setIndex(index);
         return sqlSb.toString();
     }
 
-    public static List<String> createInsertSqlBach(List<String> colNames, Set<String> keys, DataGenerateContext dataGenerateContext) {
+    public static List<String> createInsertSqlBach(List<Columns> colNames, Set<String> keys, DataGenerateContext dataGenerateContext) {
         Long count = dataGenerateContext.getCount();
         Integer sqlValuesCount = dataGenerateContext.getSqlValuesCount();
-        Long index = dataGenerateContext.getIndex();
 
         Long realCount = count / sqlValuesCount;
         if (count % sqlValuesCount != 0) {
@@ -105,7 +112,19 @@ public class DataGenerateUtil {
         for (Long i = 0L; i < realCount; i++) {
             insertSqlBach.add(createInsertSql(colNames, keys, dataGenerateContext));
         }
-
         return insertSqlBach;
+    }
+
+    private static String getIndex(long index, BigInteger length){
+        if (length == null) {
+            throw new DataGenerateException("字段长度为Null。");
+        }
+
+        String timeStr = String.valueOf(System.currentTimeMillis());
+        int indexLength = String.valueOf(index).length();
+        if (timeStr.length() + indexLength < length.intValue()) {
+            return index + timeStr;
+        }
+        return index + StringUtils.right(timeStr,length.intValue() - indexLength);
     }
 }

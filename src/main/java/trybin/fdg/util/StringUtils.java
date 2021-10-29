@@ -1,8 +1,7 @@
 package trybin.fdg.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import trybin.fdg.Constant;
+import lombok.extern.slf4j.Slf4j;
+import trybin.fdg.constant.Constant;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
@@ -11,8 +10,8 @@ import java.nio.charset.UnsupportedCharsetException;
 
 import static org.apache.commons.lang.StringUtils.leftPad;
 
+@Slf4j
 public class StringUtils {
-    private static final Logger logger = LogManager.getLogger(StringUtils.class);
 
     private static final String DEFAULT_CHARSET = "UTF-8";
 
@@ -93,8 +92,7 @@ public class StringUtils {
                 buffer.append(c);
             }
         } catch (UnsupportedCharsetException e) {
-//			e.printStackTrace();
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return str;
         }
         return buffer.toString();

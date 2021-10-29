@@ -28,5 +28,6 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
         log.info("FDG 服务启动...");
         log.info(testStr);
         DataGenerateService service = dataGenerationService.getService();
+        service.process();
     }
 }

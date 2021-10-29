@@ -1,4 +1,6 @@
 spring:
   profiles:
     active: druid,sys
-
+mybatis:
+  type-aliases-package: trybin.fdg.entity
+  mapper-locations: classpath:mapper/*.xml
