@@ -53,10 +53,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
     public void process() {
         DataGenerateContext dataGenerateContext = structureContext();
 
-        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
-        String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
-        List<Columns> columns = sqlExecuteService.selectList(findColumnsSql, Columns.class);
-
+        List<Columns> columns = getColumns(dataGenerateContext);
         // 删除旧数据
         if (deleteOldDataFlg) {
             dataRemoveService.process(DataGenerateUtil.getNotKey(columns));
@@ -68,8 +65,9 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = DataGenerateUtil.createInsertSqlBach(columns, keys, dataGenerateContext);
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", count, (System.currentTimeMillis() - dataForm) / 1000D);
+        log.info("数据插入中...");
         DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
-        log.info("插入完成，共生成 {} 条，花费时间：{} s", count, (System.currentTimeMillis() - start) / 1000D);
+        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", count, (System.currentTimeMillis() - start) / 1000D);
     }
 
     private DataGenerateContext structureContext() {
@@ -81,6 +79,13 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setSchema(schema);
         dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.MySQL);
         return dataGenerateContext;
+    }
+
+    @Override
+    public List<Columns> getColumns(DataGenerateContext dataGenerateContext) {
+        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
+        String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
+        return sqlExecuteService.selectList(findColumnsSql, Columns.class);
     }
 }
 

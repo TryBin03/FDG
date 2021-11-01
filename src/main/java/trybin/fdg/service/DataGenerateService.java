@@ -1,5 +1,10 @@
 package trybin.fdg.service;
 
+import trybin.fdg.context.DataGenerateContext;
+import trybin.fdg.entity.Columns;
+
+import java.util.List;
+
 /**
  * @author: TryBin
  * @date: 2021/10/27 18:10:39
@@ -7,4 +12,6 @@ package trybin.fdg.service;
  */
 public interface DataGenerateService {
     void process();
+
+    List<Columns> getColumns(DataGenerateContext dataGenerateContext);
 }

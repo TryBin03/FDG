@@ -21,13 +21,13 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
     private String testStr;
 
     @Autowired
-    private DataGenerateCruxService dataGenerationService;
+    private DataGenerateCruxService dataGenerateCruxService;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.info("FDG 服务启动...");
         log.info(testStr);
-        DataGenerateService service = dataGenerationService.getService();
+        DataGenerateService service = dataGenerateCruxService.getService();
         service.process();
     }
 }

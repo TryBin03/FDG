@@ -151,7 +151,6 @@ public class DataGenerateUtil {
                 Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy()
         );
-        log.info("数据插入中...");
         CompletableFuture[] cfArr = sqlBatch.stream().
                 map(sql -> CompletableFuture
                         .runAsync(() -> sqlExecuteService.insert(sql), executorService)

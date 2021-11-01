@@ -15,8 +15,8 @@ import trybin.fdg.service.DataGenerateService;
  * @version: 0.0.1
  */
 @Slf4j
-@Service("dataGenerateService")
-public class DataGenerateServiceImpl implements DataGenerateService, DataGenerateCruxService {
+@Service("dataGenerateCruxService")
+public class DataGenerateCruxServiceImpl implements DataGenerateCruxService {
 
     @Value("${datasource.type}")
     private String datasourceType;
@@ -34,9 +34,5 @@ public class DataGenerateServiceImpl implements DataGenerateService, DataGenerat
             throw new NullPointerException("传入的数据库类型不正确。");
         }
         return dataGenerationService;
-    }
-
-    @Override
-    public void process() {
     }
 }
