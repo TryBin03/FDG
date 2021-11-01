@@ -1,10 +1,16 @@
-test:
-  value: try
 datasource:
   type: MySQL
 fdg:
   table: test_1
   schema: fdgtest
-  count: 10000000
+  count: 10
   submit-count: 2500
   sql-values-count: 10
+  delete-old-data-flg: true
+
+# 数据库链接信息
+database:
+  url: jdbc:mysql://127.0.0.1:3306/fdgtest
+  username: root
+  password: 748123
+  driver-class-name: com.mysql.cj.jdbc.Driver

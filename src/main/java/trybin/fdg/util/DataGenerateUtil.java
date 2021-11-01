@@ -1,15 +1,18 @@
 package trybin.fdg.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.enums.MySQL_DATA_TYPE;
 import trybin.fdg.exception.DataGenerateException;
+import trybin.fdg.service.SqlExecuteService;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
  * @date: 2021/10/28 18:25:42
  * @version: 0.0.1
  */
+@Slf4j
 public class DataGenerateUtil {
 
     public static String perfectFindColumnsSql(DataGenerateContext dataGenerateConText, String getColNameSql) {
@@ -36,6 +40,12 @@ public class DataGenerateUtil {
         return columnsVos.stream()
                 .filter(s -> null != s.getKeyseq())
                 .map(Columns::getColname).collect(Collectors.toSet());
+    }
+
+    public static List<Columns> getNotKey(List<Columns> columnsVos) {
+        return columnsVos.stream()
+                .filter(s -> null == s.getKeyseq())
+                .collect(Collectors.toList());
     }
 
     public static String createInsertSql(List<Columns> columns, Set<String> keys, DataGenerateContext dataGenerateContext) {
@@ -128,5 +138,26 @@ public class DataGenerateUtil {
             return index + StringUtils.right(timeMillis,length.bitLength() - indexLength);
         }
         return StringUtils.right(index.toString(),length.bitLength() == 1 ? length.bitLength() : length.bitLength()-1);
+    }
+
+
+    public static void insertBatch(SqlExecuteService sqlExecuteService, List<String> sqlBatch){
+        ExecutorService executorService = new ThreadPoolExecutor(
+                5,
+                15,
+                5L,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(70),
+                Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+        log.info("数据插入中...");
+        CompletableFuture[] cfArr = sqlBatch.stream().
+                map(sql -> CompletableFuture
+                        .runAsync(() -> sqlExecuteService.insert(sql), executorService)
+                        .whenComplete((result, th) -> {
+                        })).toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(cfArr).join();
+        executorService.shutdown();
     }
 }
