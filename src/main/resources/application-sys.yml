@@ -5,6 +5,6 @@ datasource:
 fdg:
   table: test_1
   schema: fdgtest
-  count: 10
+  count: 10000000
   submit-count: 2500
   sql-values-count: 10

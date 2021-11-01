@@ -115,16 +115,18 @@ public class DataGenerateUtil {
         return insertSqlBach;
     }
 
-    private static String getIndex(long index, BigInteger length){
+    private static String getIndex(Long index, BigInteger length){
         if (length == null) {
             throw new DataGenerateException("字段长度为Null。");
         }
-
-        String timeStr = String.valueOf(System.currentTimeMillis());
         int indexLength = String.valueOf(index).length();
-        if (timeStr.length() + indexLength < length.intValue()) {
-            return index + timeStr;
+        String timeMillis = String.valueOf(System.currentTimeMillis());
+        if (length.bitLength() > timeMillis.length() + indexLength){
+            return index + timeMillis;
         }
-        return index + StringUtils.right(timeStr,length.intValue() - indexLength);
+        if (length.bitLength() > indexLength){
+            return index + StringUtils.right(timeMillis,length.bitLength() - indexLength);
+        }
+        return StringUtils.right(index.toString(),length.bitLength() == 1 ? length.bitLength() : length.bitLength()-1);
     }
 }

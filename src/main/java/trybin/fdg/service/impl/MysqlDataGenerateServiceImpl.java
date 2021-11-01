@@ -11,8 +11,11 @@ import trybin.fdg.service.DataGenerateService;
 import trybin.fdg.service.SqlExecuteService;
 import trybin.fdg.util.DataGenerateUtil;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -44,22 +47,37 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
 
     @Override
     public void process() {
+        long start = System.currentTimeMillis();
         DataGenerateContext dataGenerateContext = structureContext();
 
         String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
         String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
         List<Columns> columns = sqlExecuteService.selectList(findColumnsSql, Columns.class);
-        List<String> colName = DataGenerateUtil.getColName(columns);
         Set<String> keys = DataGenerateUtil.getKeys(columns);
+        log.info("数据生成中...");
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = DataGenerateUtil.createInsertSqlBach(columns, keys, dataGenerateContext);
         long dataTo = System.currentTimeMillis();
-        log.info("数据生成完成，花费时间：{} s。",(dataTo - dataForm) / 1000D);
-        // 数据生成完成，花费时间：97.084 s。
+        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", count, (dataTo - dataForm) / 1000D);
 
-        // todo
-        /*CreateDataConsumerServiceImpl createDataConsumerService = new CreateDataConsumerServiceImpl();
-        createDataConsumerService.consumerProcess(insertSqlBach);*/
+        ExecutorService executorService = new ThreadPoolExecutor(
+                5,
+                15,
+                5L,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(70),
+                Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+        log.info("数据插入中...");
+        CompletableFuture[] cfArr = insertSqlBach.stream().
+                map(sql -> CompletableFuture
+                        .runAsync(() -> sqlExecuteService.insert(sql), executorService)
+                        .whenComplete((result, th) -> {
+                        })).toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(cfArr).join();
+        log.info("插入完成，共生成 {} 条，花费时间：{} s", count, (System.currentTimeMillis() - start) / 1000D);
+        executorService.shutdown();
     }
 
     private DataGenerateContext structureContext() {
