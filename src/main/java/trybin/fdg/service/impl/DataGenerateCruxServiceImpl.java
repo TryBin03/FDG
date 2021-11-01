@@ -10,9 +10,9 @@ import trybin.fdg.service.DataGenerateCruxService;
 import trybin.fdg.service.DataGenerateService;
 
 /**
- * @author: TryBin
- * @date: 2021/10/27 18:13:15
- * @version: 0.0.1
+ * @author TryBin
+ * @date 2021/10/27 18:13:15
+ * @version 0.0.1
  */
 @Slf4j
 @Service("dataGenerateCruxService")
