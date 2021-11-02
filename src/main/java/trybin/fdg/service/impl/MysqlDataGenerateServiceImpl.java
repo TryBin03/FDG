@@ -64,10 +64,11 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         log.info("数据生成中...");
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = DataGenerateUtil.createInsertSqlBach(columns, keys, dataGenerateContext);
-        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", count, (System.currentTimeMillis() - dataForm) / 1000D);
+        int size = insertSqlBach.size();
+        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
         log.info("数据插入中...");
         DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
-        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", count, (System.currentTimeMillis() - start) / 1000D);
+        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", size, (System.currentTimeMillis() - start) / 1000D);
     }
 
     private DataGenerateContext structureContext() {
