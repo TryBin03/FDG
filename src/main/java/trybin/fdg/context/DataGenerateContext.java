@@ -1,14 +1,16 @@
 package trybin.fdg.context;
 
 import lombok.Data;
+import trybin.fdg.entity.batchconfig.Table;
 import trybin.fdg.enums.DATASOURCE_TYPE;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author: TryBin
+ * @author TryBin
  * @date: 2021/10/28 18:26:22
- * @version: 0.0.1
+ * @version 0.0.1
  */
 @Data
 public class DataGenerateContext {
@@ -20,4 +22,7 @@ public class DataGenerateContext {
     private AtomicLong index;
 
     private DATASOURCE_TYPE datasourceType;
+
+    private List<DataGenerateContext> dataGenerateContextList;
+    private List<Table> tableList;
 }

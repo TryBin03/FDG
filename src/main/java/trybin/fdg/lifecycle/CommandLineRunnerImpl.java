@@ -9,9 +9,9 @@ import trybin.fdg.service.DataGenerateCruxService;
 import trybin.fdg.service.DataGenerateService;
 
 /**
- * @author: TryBin
+ * @author TryBin
  * @date: 2021/10/27 18:34:22
- * @version: 0.0.1
+ * @version 0.0.1
  */
 @Component
 @Slf4j
@@ -19,6 +19,9 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
 
     @Value("${test.value:qwer}")
     private String testStr;
+
+    @Value("${fdg.batch-flag}")
+    private Boolean batchFlag;
 
     @Autowired
     private DataGenerateCruxService dataGenerateCruxService;
@@ -28,6 +31,10 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
         log.info("FDG 服务启动...");
         log.info(testStr);
         DataGenerateService service = dataGenerateCruxService.getService();
-        service.process();
+        if (batchFlag) {
+            service.batchProcess();
+        }else {
+            service.process();
+        }
     }
 }

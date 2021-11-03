@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
- * @author: TryBin
+ * @author TryBin
  * @date: 2021/10/28 18:25:42
- * @version: 0.0.1
+ * @version 0.0.1
  */
 @Slf4j
 public class DataGenerateUtil {
@@ -101,6 +101,7 @@ public class DataGenerateUtil {
                 }
                 sqlSb.append("', ");
             }
+            // 去除字符“, ”
             sqlSb.delete(sqlSb.length() - 2,sqlSb.length());
             sqlSb.append("), ");
             index.set(1 + index.get());

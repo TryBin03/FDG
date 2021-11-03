@@ -18,7 +18,7 @@ import trybin.fdg.service.DataGenerateService;
 @Service("dataGenerateCruxService")
 public class DataGenerateCruxServiceImpl implements DataGenerateCruxService {
 
-    @Value("${datasource.type}")
+    @Value("${database.type}")
     private String datasourceType;
 
     @Autowired

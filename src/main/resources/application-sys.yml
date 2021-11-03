@@ -1,15 +1,52 @@
-datasource:
-  type: MySQL
 fdg:
-  table: test_1
-  schema: fdgtest
-  count: 10000000
+# 系统配置
+  delete-old-data-flag: true
+  batch-flag: true
   submit-count: 2500
   sql-values-count: 10
-  delete-old-data-flg: true
 
+---
+# 单表配置
+fdg:
+  single-table:
+    table: test_1
+    schema: fdgtest
+    count: 100
+    value-list:
+      - column-name: key1
+        value: 111
+        auto-increment: true
+      - column-name: key2
+        value: 111
+        auto-increment: true
+
+---
+# 批量处理配置
+fdg:
+  batch:
+    group-list:
+      - table-list:
+          - schema-name: fdgtest
+            table-name: test_1
+            count: 100
+          - schema-name: fdgtest
+            table-name: test_2
+            count: 100
+        value-list:
+          - schema-name: fdgtest
+            table-name: test_1
+            column-name: key1
+            value: 111
+            auto-increment: true
+          - schema-name: fdgtest
+            table-name: test_2
+            column-name: key1
+            value: 111
+            auto-increment: true
+---
 # 数据库链接信息
 database:
+  type: MySQL
   url: jdbc:mysql://127.0.0.1:3306/fdgtest
   username: root
   password: 748123
