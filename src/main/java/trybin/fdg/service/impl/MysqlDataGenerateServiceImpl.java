@@ -5,13 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import trybin.fdg.config.FdgBatchConfig;
+import trybin.fdg.config.FdgSingleTableConfig;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
-import trybin.fdg.config.FdgSingleTableConfig;
 import trybin.fdg.enums.DATASOURCE_TYPE;
+import trybin.fdg.exception.DataGenerateException;
 import trybin.fdg.service.DataGenerateService;
 import trybin.fdg.service.DataRemoveService;
 import trybin.fdg.service.SqlExecuteService;
+import trybin.fdg.service.VerificationConfigService;
 import trybin.fdg.service.helper.ConfigAnalysisHelper;
 import trybin.fdg.util.DataGenerateUtil;
 
@@ -52,6 +54,9 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
     @Autowired
     private FdgSingleTableConfig fdgSingleTableConfig;
 
+    @Autowired
+    private VerificationConfigService verificationConfigService;
+
     @Override
     public void process() {
         DataGenerateContext dataGenerateContext = structureContext();
@@ -59,7 +64,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         List<Columns> columns = getColumns(dataGenerateContext);
         // 删除旧数据
         if (deleteOldDataFlag) {
-            dataRemoveService.process(DataGenerateUtil.getNotKey(columns));
+            dataRemoveService.process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
         }
 
         long start = System.currentTimeMillis();
@@ -84,8 +89,14 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
         dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.MySQL);
-        List<DataGenerateContext> dataGenerateContextList = configAnalysisHelper.analysis(fdgBachConfig.getGroupList());
-        dataGenerateContext.setDataGenerateContextList(dataGenerateContextList);
+        // 解析
+        configAnalysisHelper.batchAnalysis(fdgBachConfig.getGroupList(), dataGenerateContext);
+        // 校验
+        if (verificationConfigService.isAdopt(verificationConfigService.execute(dataGenerateContext))) {
+            log.error("配置校验未通过，请检查配置。");
+            throw new DataGenerateException("配置校验未通过，请检查配置。");
+        }
+        dataGenerateContext.setDataGenerateContextList(DataGenerateUtil.buildTask(dataGenerateContext));
         return dataGenerateContext;
     }
 
@@ -97,6 +108,13 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setCount(fdgSingleTableConfig.getCount());
         dataGenerateContext.setTable(fdgSingleTableConfig.getTable());
         dataGenerateContext.setSchema(fdgSingleTableConfig.getSchema());
+        // 解析
+        configAnalysisHelper.analysis(fdgSingleTableConfig.getValueList(), dataGenerateContext);
+        // 校验
+        if (verificationConfigService.isAdopt(verificationConfigService.execute(dataGenerateContext))) {
+            log.error("配置校验未通过，请检查配置。");
+            throw new DataGenerateException("配置校验未通过，请检查配置。");
+        }
         return dataGenerateContext;
     }
 

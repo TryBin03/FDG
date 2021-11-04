@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
+import trybin.fdg.entity.batchconfig.Value;
 import trybin.fdg.enums.MySQL_DATA_TYPE;
 import trybin.fdg.exception.DataGenerateException;
 import trybin.fdg.service.SqlExecuteService;
@@ -11,6 +12,7 @@ import trybin.fdg.service.SqlExecuteService;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -159,5 +161,12 @@ public class DataGenerateUtil {
                         })).toArray(CompletableFuture[]::new);
         CompletableFuture.allOf(cfArr).join();
         executorService.shutdown();
+    }
+
+    public static List<DataGenerateContext> buildTask(DataGenerateContext dataGenerateContext) {
+        List<DataGenerateContext> dataGenerateContextArrayList = new ArrayList<>();
+        Map<String, Map<String, Map<String, Value>>> columnContainer = dataGenerateContext.getColumnContainer();
+
+        return dataGenerateContextArrayList;
     }
 }
