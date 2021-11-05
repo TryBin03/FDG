@@ -1,7 +1,7 @@
 fdg:
 # 系统配置
   delete-old-data-flag: true
-  batch-flag: false
+  batch-flag: true
   submit-count: 2500
   sql-values-count: 10
 

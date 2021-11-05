@@ -11,6 +11,8 @@ import java.math.BigInteger;
  */
 @Data
 public class Columns {
+    private String schemaName;
+    private String tableName;
     private String colname;
     private Long keyseq;
     private String typename;

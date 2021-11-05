@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface DataRemoveService {
     void process(List<Columns> key, DataGenerateContext dataGenerateContext);
+
+    void batchProcess(DataGenerateContext dataGenerateContext);
 }

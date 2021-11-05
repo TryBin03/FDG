@@ -1,6 +1,7 @@
 package trybin.fdg.context;
 
 import lombok.Data;
+import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Table;
 import trybin.fdg.entity.batchconfig.Value;
 import trybin.fdg.enums.DATASOURCE_TYPE;
@@ -31,4 +32,8 @@ public class DataGenerateContext {
     private Map<String, Map<String, Map<String, Value>>> columnContainer;
     private Map<String, Long>  tableContainer;
     private Map<String, Value> valuesContainer;
+
+    private Map<String, Map<String, List<Columns>>> tableStructureContainer;
+    private Map<String, Map<String, List<Columns>>> notKeyColumnsContainer;
+    private Map<String, Map<String, List<Columns>>> keyColumnsContainer;
 }

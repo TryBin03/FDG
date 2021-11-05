@@ -10,16 +10,16 @@ import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.enums.DATASOURCE_TYPE;
 import trybin.fdg.exception.DataGenerateException;
-import trybin.fdg.service.DataGenerateService;
-import trybin.fdg.service.DataRemoveService;
-import trybin.fdg.service.SqlExecuteService;
-import trybin.fdg.service.VerificationConfigService;
+import trybin.fdg.service.*;
 import trybin.fdg.service.helper.ConfigAnalysisHelper;
 import trybin.fdg.util.DataGenerateUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * @author TryBin
@@ -57,11 +57,14 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
     @Autowired
     private VerificationConfigService verificationConfigService;
 
+    @Autowired
+    private ReadDatabaseResourcesService readDatabaseResourcesService;
+
     @Override
     public void process() {
         DataGenerateContext dataGenerateContext = structureContext();
 
-        List<Columns> columns = getColumns(dataGenerateContext);
+        List<Columns> columns = readDatabaseResourcesService.getColumns(dataGenerateContext);
         // 删除旧数据
         if (deleteOldDataFlag) {
             dataRemoveService.process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
@@ -82,6 +85,31 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
     @Override
     public void batchProcess() {
         DataGenerateContext dataGenerateContext = structureBatchContext();
+
+        // 删除旧数据
+        if (deleteOldDataFlag) {
+            dataRemoveService.batchProcess(dataGenerateContext);
+        }
+
+        long start = System.currentTimeMillis();
+        long dataForm = System.currentTimeMillis();
+        log.info("数据生成中...");
+        List<String> insertSqlBach = new ArrayList<>();
+        Map<String, Map<String, List<Columns>>> tableStructureContainer = dataGenerateContext.getTableStructureContainer();
+        Map<String, Map<String, List<Columns>>> notKeyColumnsContainer = dataGenerateContext.getNotKeyColumnsContainer();
+        Map<String, Map<String, List<Columns>>> keyColumnsContainer = dataGenerateContext.getKeyColumnsContainer();
+        dataGenerateContext.getDataGenerateContextList().forEach(context->{
+            insertSqlBach.addAll(DataGenerateUtil.createInsertSqlBach(
+                    tableStructureContainer.get(context.getSchema()).get(context.getTable()),
+                    keyColumnsContainer.get(context.getSchema()).get(context.getTable()).stream().map(Columns::getColname).collect(Collectors.toSet()),
+                    context));
+        });
+        int size = insertSqlBach.size();
+        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
+        log.info("数据插入中...");
+        DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
+        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", size, (System.currentTimeMillis() - start) / 1000D);
+
     }
 
     private DataGenerateContext structureBatchContext() {
@@ -89,6 +117,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
         dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.MySQL);
+        readDatabaseResourcesService.batchFindColumns(dataGenerateContext);
         // 解析
         configAnalysisHelper.batchAnalysis(fdgBachConfig.getGroupList(), dataGenerateContext);
         // 校验
@@ -118,11 +147,6 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         return dataGenerateContext;
     }
 
-    @Override
-    public List<Columns> getColumns(DataGenerateContext dataGenerateContext) {
-        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
-        String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
-        return sqlExecuteService.selectList(findColumnsSql, Columns.class);
-    }
+
 }
 

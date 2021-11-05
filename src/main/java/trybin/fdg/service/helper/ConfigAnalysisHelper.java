@@ -106,7 +106,7 @@ public class ConfigAnalysisHelper {
 
             Map<String, Map<String, Value>> tableMap = new HashMap<>(1);
             tableMap.put(dataGenerateContext.getTable(), columnMap);
-            columnContainer.put(dataGenerateContext.getTable(),tableMap);
+            columnContainer.put(dataGenerateContext.getSchema(),tableMap);
         });
 
         dataGenerateContext.setTableContainer(tableContainer);
