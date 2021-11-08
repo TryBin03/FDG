@@ -86,8 +86,10 @@ public class DataRemoveServiceImpl implements DataRemoveService {
                 sb.append("1970-01-01");
             } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIME.name(), typename)) {
                 sb.append("00:00:00");
-            } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATETIME.name(), typename) || StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)) {
+            } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATETIME.name(), typename)) {
                 sb.append("1970-01-01 00:00:00");
+            } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)) {
+                sb.append("1970-01-01 08:00:01");
             } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.YEAR.name(), typename)) {
                 sb.append("1970");
             }

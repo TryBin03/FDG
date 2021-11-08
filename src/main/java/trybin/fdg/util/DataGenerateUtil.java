@@ -67,6 +67,9 @@ public class DataGenerateUtil {
 
         // 拼装值
         for (int i = 0; i < sqlValuesCount; i++) {
+            if (index.get() == count) {
+                break;
+            }
             sqlSb.append("(");
             for (Columns column : columns) {
                 sqlSb.append("'");

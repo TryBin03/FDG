@@ -15,10 +15,8 @@ fdg:
     value-list:
       - column-name: key1
         value: 111
-        auto-increment: true
       - column-name: key2
         value: 111
-        auto-increment: true
 
 ---
 # 批量处理配置
@@ -28,21 +26,19 @@ fdg:
       - table-list:
           - schema-name: fdgtest
             table-name: test_1
-            count: 100
+            count: 12
           - schema-name: fdgtest
             table-name: test_2
-            count: 100
+            count: 12
         value-list:
           - schema-name: fdgtest
             table-name: test_1
             column-name: key1
             value: 111
-            auto-increment: true
           - schema-name: fdgtest
             table-name: test_2
             column-name: key1
             value: 111
-            auto-increment: true
 ---
 # 数据库链接信息
 database:

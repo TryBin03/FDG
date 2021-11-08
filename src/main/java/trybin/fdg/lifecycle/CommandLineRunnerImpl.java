@@ -29,6 +29,7 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.info("FDG 服务启动...");
+        long start = System.currentTimeMillis();
         log.info(testStr);
         DataGenerateService service = dataGenerateCruxService.getService();
         if (batchFlag) {
@@ -36,5 +37,6 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
         }else {
             service.process();
         }
+        log.info("FDG 服务结束，共花费 {} s。", (System.currentTimeMillis() - start) / 1000D);
     }
 }

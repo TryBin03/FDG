@@ -70,16 +70,16 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
             dataRemoveService.process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
         }
 
-        long start = System.currentTimeMillis();
         Set<String> keys = DataGenerateUtil.getKeys(columns);
         log.info("数据生成中...");
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = DataGenerateUtil.createInsertSqlBach(columns, keys, dataGenerateContext);
         int size = insertSqlBach.size();
-        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
+        log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", dataGenerateContext.getIndex().get(), (System.currentTimeMillis() - dataForm) / 1000D);
         log.info("数据插入中...");
+        long start = System.currentTimeMillis();
         DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
-        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", size, (System.currentTimeMillis() - start) / 1000D);
+        log.info("数据插入完成，共生成 {} 条，花费时间：{} s", dataGenerateContext.getIndex().get(), (System.currentTimeMillis() - start) / 1000D);
     }
 
     @Override
@@ -91,25 +91,25 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
             dataRemoveService.batchProcess(dataGenerateContext);
         }
 
-        long start = System.currentTimeMillis();
-        long dataForm = System.currentTimeMillis();
         log.info("数据生成中...");
+        long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = new ArrayList<>();
         Map<String, Map<String, List<Columns>>> tableStructureContainer = dataGenerateContext.getTableStructureContainer();
         Map<String, Map<String, List<Columns>>> notKeyColumnsContainer = dataGenerateContext.getNotKeyColumnsContainer();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = dataGenerateContext.getKeyColumnsContainer();
+        AtomicLong size = new AtomicLong(0);
         dataGenerateContext.getDataGenerateContextList().forEach(context->{
             insertSqlBach.addAll(DataGenerateUtil.createInsertSqlBach(
                     tableStructureContainer.get(context.getSchema()).get(context.getTable()),
                     keyColumnsContainer.get(context.getSchema()).get(context.getTable()).stream().map(Columns::getColname).collect(Collectors.toSet()),
                     context));
+            size.addAndGet(context.getIndex().get());
         });
-        int size = insertSqlBach.size();
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
         log.info("数据插入中...");
+        long start = System.currentTimeMillis();
         DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
         log.info("数据插入完成，共生成 {} 条，花费时间：{} s", size, (System.currentTimeMillis() - start) / 1000D);
-
     }
 
     private DataGenerateContext structureBatchContext() {
