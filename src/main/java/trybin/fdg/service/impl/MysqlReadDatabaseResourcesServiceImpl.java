@@ -2,6 +2,7 @@ package trybin.fdg.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
@@ -17,8 +18,8 @@ import java.util.stream.Collectors;
  * @author TryBin
  */
 @Slf4j
-@Service("readDatabaseResourcesService")
-public class ReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesService {
+@Component(value = "MySQLReadDatabaseResourcesService")
+public class MysqlReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesService {
 
     @Autowired
     SqlExecuteServiceImpl sqlExecuteService;

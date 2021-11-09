@@ -2,12 +2,15 @@ package trybin.fdg.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
+import trybin.fdg.entity.OracleColumns;
 import trybin.fdg.service.ReadDatabaseResourcesService;
 import trybin.fdg.util.DataGenerateUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +20,8 @@ import java.util.stream.Collectors;
  * @author TryBin
  */
 @Slf4j
-@Service("readDatabaseResourcesService")
-public class ReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesService {
+@Component(value = "OracleReadDatabaseResourcesService")
+public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesService {
 
     @Autowired
     SqlExecuteServiceImpl sqlExecuteService;
@@ -46,8 +49,30 @@ public class ReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesSe
 
     @Override
     public List<Columns> getColumns(DataGenerateContext dataGenerateContext) {
-        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
+        String getColNameSql  = "SELECT\n" +
+                    "    utc.COLUMN_NAME                          AS COLNAME,\n" +
+                    "    DECODE(uc.constraint_type, 'P', 1, NULL) AS KEYSEQ,\n" +
+                    "    DATA_TYPE                                AS TYPENAME,\n" +
+                    "    DATA_LENGTH                              AS LENGTH\n" +
+                    "FROM\n" +
+                    "    user_tab_columns utc\n" +
+                    "LEFT JOIN\n" +
+                    "    user_cons_columns ucc\n" +
+                    "ON\n" +
+                    "    utc.TABLE_NAME = ucc.TABLE_NAME\n" +
+                    "AND utc.COLUMN_NAME = ucc.COLUMN_NAME\n" +
+                    "LEFT JOIN\n" +
+                    "    user_constraints uc\n" +
+                    "ON\n" +
+                    "    ucc.constraint_name = uc.constraint_name\n" +
+                    "WHERE\n" +
+                    "   utc.TABLE_NAME = '${REP1}'  AND\n" +
+                    "    uc.index_name IS NOT NULL\n" +
+                    "OR  (utc.TABLE_NAME = 'test_1' AND\n" +
+                    "        uc.index_name IS NULL\n" +
+                    "    AND ucc.constraint_name IS NULL)";
         String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
-        return sqlExecuteService.selectList(findColumnsSql, Columns.class);
+        return new ArrayList<>(sqlExecuteService.selectList(findColumnsSql, OracleColumns.class));
     }
+
 }

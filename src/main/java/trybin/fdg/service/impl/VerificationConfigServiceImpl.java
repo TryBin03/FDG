@@ -8,6 +8,7 @@ import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.VerificationColumns;
 import trybin.fdg.entity.VerificationTable;
 import trybin.fdg.entity.batchconfig.Value;
+import trybin.fdg.enums.DATASOURCE_TYPE;
 import trybin.fdg.service.SqlExecuteService;
 import trybin.fdg.service.VerificationConfigService;
 
@@ -31,30 +32,51 @@ public class VerificationConfigServiceImpl implements VerificationConfigService 
 
         Map<String, Long> tableContainer = dataGenerateContext.getTableContainer();
 
-        String findVerificationTableql = "select DISTINCT CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME) TABLEID, TABLE_NAME TABLENAME from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
+        String findVerificationTableql = "";
+        DATASOURCE_TYPE datasourceType = dataGenerateContext.getDatasourceType();
+        if (DATASOURCE_TYPE.MySQL == datasourceType) {
+            findVerificationTableql = "select DISTINCT CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME) TABLEID, TABLE_NAME TABLENAME from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
+        } else if (DATASOURCE_TYPE.Oracle == datasourceType) {
+            findVerificationTableql = "SELECT\n" +
+                    "    OWNER||'.'||TABLE_NAME  TABLEID,\n" +
+                    "    TABLE_NAME                               TABLENAME\n" +
+                    "FROM\n" +
+                    "    user_constraints\n" +
+                    "WHERE INDEX_OWNER = '" + dataGenerateContext.getSchema() + "'";
+        }
         List<VerificationTable> verificationTableList = sqlExecuteService.selectList(findVerificationTableql, VerificationTable.class);
         List<String> databaseTableNames = verificationTableList.stream().map(VerificationTable::getTableId).collect(Collectors.toList());
         List<String> tableNames = new ArrayList<>(tableContainer.keySet());
         if (!databaseTableNames.containsAll(tableNames)) {
-            tableNames.forEach((tableName)->{
+            tableNames.forEach((tableName) -> {
                 if (databaseTableNames.contains(tableName)) {
                     log.error("在数据库中没有找到 {} 表，请检查配置。", tableName);
-                    exceptionContainer.add("在数据库中没有找到 "+ tableName +" 表，请检查配置。");
+                    exceptionContainer.add("在数据库中没有找到 " + tableName + " 表，请检查配置。");
                 }
             });
         }
 
         Map<String, Value> valuesContainer = dataGenerateContext.getValuesContainer();
-        String findVerificationColumnSql = "select CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) COLUMNID, COLUMN_NAME COLUMNNAME, DATA_TYPE from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
+        String findVerificationColumnSql = "";
+        if (DATASOURCE_TYPE.MySQL == datasourceType) {
+            findVerificationColumnSql = "select CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) COLUMNID, COLUMN_NAME COLUMNNAME, DATA_TYPE from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
+        } else if (DATASOURCE_TYPE.Oracle == datasourceType) {
+            findVerificationColumnSql = "SELECT\n" +
+                    "    '"+ dataGenerateContext.getSchema() +"'||'.'||TABLE_NAME||'.'||COLUMN_NAME COLUMNID,\n" +
+                    "    COLUMN_NAME                                           COLUMNNAME,\n" +
+                    "    DATA_TYPE\n" +
+                    "FROM\n" +
+                    "    user_tab_columns";
+        }
         List<VerificationColumns> verificationColumnsList = sqlExecuteService.selectList(findVerificationColumnSql, VerificationColumns.class);
 
         List<String> databaseColumnNames = verificationColumnsList.stream().map(VerificationColumns::getColumnId).collect(Collectors.toList());
         List<String> columnNames = new ArrayList<>(valuesContainer.keySet());
         if (!databaseColumnNames.containsAll(columnNames)) {
-            columnNames.forEach((columnName)->{
+            columnNames.forEach((columnName) -> {
                 if (databaseTableNames.contains(columnName)) {
                     log.error("在数据库中没有找到 {} 列，请检查配置。", columnName);
-                    exceptionContainer.add("在数据库中没有找到 "+ columnName +" 列，请检查配置。");
+                    exceptionContainer.add("在数据库中没有找到 " + columnName + " 列，请检查配置。");
                 }
             });
         }

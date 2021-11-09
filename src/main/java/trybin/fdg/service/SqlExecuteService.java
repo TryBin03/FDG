@@ -1,6 +1,7 @@
 package trybin.fdg.service;
 
 import com.github.pagehelper.Page;
+import trybin.fdg.entity.OracleColumns;
 
 import java.util.List;
 import java.util.Map;

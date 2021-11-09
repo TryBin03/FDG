@@ -10,6 +10,9 @@ import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.enums.DATASOURCE_TYPE;
 import trybin.fdg.exception.DataGenerateException;
+import trybin.fdg.factory.BuildCreateSqlServiceFactory;
+import trybin.fdg.factory.DataRemoveServiceFactory;
+import trybin.fdg.factory.ReadDatabaseResourcesServiceFactory;
 import trybin.fdg.service.*;
 import trybin.fdg.service.helper.ConfigAnalysisHelper;
 import trybin.fdg.util.DataGenerateUtil;
@@ -26,9 +29,9 @@ import java.util.stream.Collectors;
  * @date: 2021/10/28 15:26:04
  * @version 0.0.1
  */
-@Service("mysqlDataGenerateService")
+@Service("dataGenerateService")
 @Slf4j
-public class MysqlDataGenerateServiceImpl implements DataGenerateService {
+public class DataGenerateServiceImpl implements DataGenerateService {
 
     @Value("${fdg.submit-count}")
     private Long submitCount;
@@ -38,6 +41,9 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
 
     @Value("${fdg.delete-old-data-flag}")
     private Boolean deleteOldDataFlag;
+
+    @Value("${database.type}")
+    private String datasourceType;
 
     @Autowired
     private SqlExecuteService sqlExecuteService;
@@ -60,21 +66,34 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
     @Autowired
     private ReadDatabaseResourcesService readDatabaseResourcesService;
 
+    @Autowired
+    private ReadDatabaseResourcesServiceFactory readDatabaseResourcesServiceFactory;
+
+    @Autowired
+    private DataRemoveServiceFactory dataRemoveServiceFactory;
+
+    @Autowired
+    private BuildCreateSqlServiceFactory buildCreateSqlServiceFactory;
+
     @Override
     public void process() {
         DataGenerateContext dataGenerateContext = structureContext();
-
-        List<Columns> columns = readDatabaseResourcesService.getColumns(dataGenerateContext);
+        List<Columns> columns = readDatabaseResourcesServiceFactory
+                .getReadDatabaseResourcesServiceIns(dataGenerateContext.getDatasourceType().name())
+                .getColumns(dataGenerateContext);
         // 删除旧数据
         if (deleteOldDataFlag) {
-            dataRemoveService.process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
+            dataRemoveServiceFactory
+                    .getDataRemoveServiceIns(dataGenerateContext.getDatasourceType().name())
+                    .process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
         }
 
         Set<String> keys = DataGenerateUtil.getKeys(columns);
         log.info("数据生成中...");
         long dataForm = System.currentTimeMillis();
-        List<String> insertSqlBach = DataGenerateUtil.createInsertSqlBach(columns, keys, dataGenerateContext);
-        int size = insertSqlBach.size();
+        List<String> insertSqlBach = buildCreateSqlServiceFactory
+                .getBuildCreateSqlServiceIns(dataGenerateContext.getDatasourceType().name())
+                .execute(columns, keys, dataGenerateContext);
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", dataGenerateContext.getIndex().get(), (System.currentTimeMillis() - dataForm) / 1000D);
         log.info("数据插入中...");
         long start = System.currentTimeMillis();
@@ -99,7 +118,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = dataGenerateContext.getKeyColumnsContainer();
         AtomicLong size = new AtomicLong(0);
         dataGenerateContext.getDataGenerateContextList().forEach(context->{
-            insertSqlBach.addAll(DataGenerateUtil.createInsertSqlBach(
+            insertSqlBach.addAll(buildCreateSqlServiceFactory.getBuildCreateSqlServiceIns(context.getDatasourceType().name()).execute(
                     tableStructureContainer.get(context.getSchema()).get(context.getTable()),
                     keyColumnsContainer.get(context.getSchema()).get(context.getTable()).stream().map(Columns::getColname).collect(Collectors.toSet()),
                     context));
@@ -116,7 +135,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
         DataGenerateContext dataGenerateContext = new DataGenerateContext();
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
-        dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.MySQL);
+        dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.getType(datasourceType));
         readDatabaseResourcesService.batchFindColumns(dataGenerateContext);
         // 解析
         configAnalysisHelper.batchAnalysis(fdgBachConfig.getGroupList(), dataGenerateContext);
@@ -131,7 +150,7 @@ public class MysqlDataGenerateServiceImpl implements DataGenerateService {
 
     private DataGenerateContext structureContext() {
         DataGenerateContext dataGenerateContext = new DataGenerateContext();
-        dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.MySQL);
+        dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.getType(datasourceType));
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
         dataGenerateContext.setCount(fdgSingleTableConfig.getCount());

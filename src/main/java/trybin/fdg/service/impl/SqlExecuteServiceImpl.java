@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trybin.fdg.dao.SqlExecuteMapper;
+import trybin.fdg.entity.OracleColumns;
 import trybin.fdg.service.SqlExecuteService;
 
 import java.beans.PropertyDescriptor;

@@ -3,6 +3,7 @@ package trybin.fdg.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
@@ -15,9 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+/**
+ * @author TryBin
+ */
 @Slf4j
-@Service("dataRemoveService")
-public class DataRemoveServiceImpl implements DataRemoveService {
+@Component("OracleDataRemoveService")
+public class OracleDataRemoveServiceImpl implements DataRemoveService {
 
     @Autowired
     private SqlExecuteService sqlExecuteService;
@@ -69,10 +73,10 @@ public class DataRemoveServiceImpl implements DataRemoveService {
 
     private String generateRemoveSql(String schema, String table, List<Columns> columnsNotKet, Map<String, Value> userDefinedValueContainer) {
         StringBuffer sb = new StringBuffer();
-        sb.append("DELETE FROM ").append(schema).append(".").append(table);
+        sb.append("DELETE FROM ").append(schema).append(".").append("\"").append(table).append("\"");
         sb.append(" WHERE ");
         columnsNotKet.forEach(column -> {
-            sb.append(column.getColname()).append(" = ").append("'");
+            sb.append("\"").append(column.getColname()).append("\"").append(" = ").append("'");
             String typename = column.getTypename();
             // 用户自定义值
             if (userDefinedValueContainer.containsKey(column.getColname())) {
