@@ -64,9 +64,6 @@ public class DataGenerateServiceImpl implements DataGenerateService {
     private VerificationConfigService verificationConfigService;
 
     @Autowired
-    private ReadDatabaseResourcesService readDatabaseResourcesService;
-
-    @Autowired
     private ReadDatabaseResourcesServiceFactory readDatabaseResourcesServiceFactory;
 
     @Autowired
@@ -107,7 +104,9 @@ public class DataGenerateServiceImpl implements DataGenerateService {
 
         // 删除旧数据
         if (deleteOldDataFlag) {
-            dataRemoveService.batchProcess(dataGenerateContext);
+            dataRemoveServiceFactory
+                    .getDataRemoveServiceIns(dataGenerateContext.getDatasourceType().name())
+                    .batchProcess(dataGenerateContext);
         }
 
         log.info("数据生成中...");
@@ -136,7 +135,9 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
         dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.getType(datasourceType));
-        readDatabaseResourcesService.batchFindColumns(dataGenerateContext);
+        readDatabaseResourcesServiceFactory
+                .getReadDatabaseResourcesServiceIns(dataGenerateContext.getDatasourceType().name())
+                .batchFindColumns(dataGenerateContext);
         // 解析
         configAnalysisHelper.batchAnalysis(fdgBachConfig.getGroupList(), dataGenerateContext);
         // 校验

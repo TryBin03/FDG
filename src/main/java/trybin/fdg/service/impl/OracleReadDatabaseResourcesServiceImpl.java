@@ -28,7 +28,30 @@ public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResou
 
     @Override
     public void batchFindColumns(DataGenerateContext dataGenerateContext) {
-        String batchFindNotKeyColumnsSql = "select TABLE_SCHEMA as SCHEMANAME, TABLE_NAME as TABLENAME, COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema') ORDER BY ORDINAL_POSITION";
+        String batchFindNotKeyColumnsSql = "SELECT\n" +
+                "    'DEV'                                    AS SCHEMANAME,\n" +
+                "    utc.TABLE_NAME                           AS TABLENAME,\n" +
+                "    utc.COLUMN_NAME                          AS COLNAME,\n" +
+                "    DECODE(uc.constraint_type, 'P', 1, NULL) AS KEYSEQ,\n" +
+                "    DATA_TYPE                                AS TYPENAME,\n" +
+                "    DATA_LENGTH                              AS LENGTH\n" +
+                "FROM\n" +
+                "    user_tab_columns utc\n" +
+                "LEFT JOIN\n" +
+                "    user_cons_columns ucc\n" +
+                "ON\n" +
+                "    utc.TABLE_NAME = ucc.TABLE_NAME\n" +
+                "AND utc.COLUMN_NAME = ucc.COLUMN_NAME\n" +
+                "LEFT JOIN\n" +
+                "    user_constraints uc\n" +
+                "ON\n" +
+                "    ucc.constraint_name = uc.constraint_name\n" +
+                "WHERE\n" +
+                "   utc.TABLE_NAME = '${REP1}'  AND\n" +
+                "    uc.index_name IS NOT NULL\n" +
+                "OR  (utc.TABLE_NAME = 'test_1' AND\n" +
+                "        uc.index_name IS NULL\n" +
+                "    AND ucc.constraint_name IS NULL)";
         List<Columns> columns = sqlExecuteService.selectList(batchFindNotKeyColumnsSql, Columns.class);
         Map<String, Map<String, List<Columns>>> tableStructureContainer = new HashMap<>();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = new HashMap<>();
