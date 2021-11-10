@@ -24,18 +24,17 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
     private Boolean batchFlag;
 
     @Autowired
-    private DataGenerateCruxService dataGenerateCruxService;
+    private DataGenerateService dataGenerateService;
 
     @Override
     public void run(String... args) {
         log.info("FDG 服务启动...");
         long start = System.currentTimeMillis();
         log.info(testStr);
-        DataGenerateService service = dataGenerateCruxService.getService();
         if (batchFlag) {
-            service.batchProcess();
+            dataGenerateService.batchProcess();
         }else {
-            service.process();
+            dataGenerateService.process();
         }
         log.info("FDG 服务结束，共花费 {} s。", (System.currentTimeMillis() - start) / 1000D);
     }

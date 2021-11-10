@@ -1,7 +1,9 @@
 package trybin.fdg.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import trybin.fdg.context.DataGenerateContext;
@@ -10,6 +12,7 @@ import trybin.fdg.entity.OracleColumns;
 import trybin.fdg.service.ReadDatabaseResourcesService;
 import trybin.fdg.util.DataGenerateUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +29,14 @@ public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResou
     @Autowired
     SqlExecuteServiceImpl sqlExecuteService;
 
+    @Value("${database.username}")
+    private String oracleUserName;
+
     @Override
     public void batchFindColumns(DataGenerateContext dataGenerateContext) {
         String batchFindNotKeyColumnsSql = "SELECT\n" +
-                "    'DEV'                                    AS SCHEMANAME,\n" +
-                "    utc.TABLE_NAME                           AS TABLENAME,\n" +
+                "    '" + StringUtils.upperCase(oracleUserName) + "'                                                     AS SCHEMANAME,\n" +
+                "    utc.TABLE_NAME                                                        AS TABLENAME,\n" +
                 "    utc.COLUMN_NAME                          AS COLNAME,\n" +
                 "    DECODE(uc.constraint_type, 'P', 1, NULL) AS KEYSEQ,\n" +
                 "    DATA_TYPE                                AS TYPENAME,\n" +
@@ -47,12 +53,11 @@ public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResou
                 "ON\n" +
                 "    ucc.constraint_name = uc.constraint_name\n" +
                 "WHERE\n" +
-                "   utc.TABLE_NAME = '${REP1}'  AND\n" +
                 "    uc.index_name IS NOT NULL\n" +
-                "OR  (utc.TABLE_NAME = 'test_1' AND\n" +
-                "        uc.index_name IS NULL\n" +
-                "    AND ucc.constraint_name IS NULL)";
-        List<Columns> columns = sqlExecuteService.selectList(batchFindNotKeyColumnsSql, Columns.class);
+                "OR  (\n" +
+                "    uc.index_name IS NULL\n" +
+                "    AND ucc.constraint_name IS NULL)\n";
+        List<Columns> columns = new ArrayList<>(sqlExecuteService.selectList(batchFindNotKeyColumnsSql, OracleColumns.class));
         Map<String, Map<String, List<Columns>>> tableStructureContainer = new HashMap<>();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = new HashMap<>();
         Map<String, Map<String, List<Columns>>> notKeyColumnsContainer = new HashMap<>();
@@ -61,7 +66,7 @@ public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResou
             Map<String, List<Columns>> valueGroupByTableName = sv.stream().collect(Collectors.groupingBy(Columns::getTableName));
             tableStructureContainer.put(sk,valueGroupByTableName);
             keyColumnsContainer.put(sk, sv.stream().filter(s-> s.getKeyseq() != null
-                    && s.getKeyseq() instanceof Long ? (Long) s.getKeyseq() == 1L : "1".equals((String) s.getKeyseq())).collect(Collectors.groupingBy(Columns::getTableName)));
+                    && ((BigDecimal)s.getKeyseq()).compareTo(new BigDecimal(1)) == 0).collect(Collectors.groupingBy(Columns::getTableName)));
             notKeyColumnsContainer.put(sk, sv.stream().filter(s-> s.getKeyseq() == null).collect(Collectors.groupingBy(Columns::getTableName)));
         });
         dataGenerateContext.setTableStructureContainer(tableStructureContainer);
@@ -91,9 +96,11 @@ public class OracleReadDatabaseResourcesServiceImpl implements ReadDatabaseResou
                     "WHERE\n" +
                     "   utc.TABLE_NAME = '${REP1}'  AND\n" +
                     "    uc.index_name IS NOT NULL\n" +
-                    "OR  (utc.TABLE_NAME = 'test_1' AND\n" +
+                    "OR  (utc.TABLE_NAME = '${REP1}' AND\n" +
                     "        uc.index_name IS NULL\n" +
-                    "    AND ucc.constraint_name IS NULL)";
+                    "    AND ucc.constraint_name IS NULL)" +
+                    "ORDER BY\n" +
+                    "    COLUMN_ID\n";
         String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
         return new ArrayList<>(sqlExecuteService.selectList(findColumnsSql, OracleColumns.class));
     }

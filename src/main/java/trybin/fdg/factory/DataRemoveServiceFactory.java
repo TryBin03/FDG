@@ -1,5 +1,6 @@
 package trybin.fdg.factory;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trybin.fdg.service.DataRemoveService;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author TryBin
  */
 @Service
+@Slf4j
 public class DataRemoveServiceFactory {
 
     @Autowired
@@ -19,6 +21,7 @@ public class DataRemoveServiceFactory {
     public DataRemoveService getDataRemoveServiceIns(String code) {
         DataRemoveService reportInstance = dataRemoveServiceIns.get(code + "DataRemoveService");
         if (reportInstance == null) {
+            log.error("未定义 DataRemoveServiceInstance");
             throw new RuntimeException("未定义 DataRemoveServiceInstance");
         }
 

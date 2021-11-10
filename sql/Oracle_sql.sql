@@ -21,6 +21,8 @@ OR  (
         utc.TABLE_NAME = 'test_1'
     AND uc.index_name IS NULL
     AND ucc.constraint_name IS NULL)
+ORDER BY
+    COLUMN_ID
 --查询所有表   DEV 为用户名
 SELECT
     OWNER||'.'||TABLE_NAME  TABLEID,
@@ -38,7 +40,7 @@ FROM
     user_tab_columns
     
  --查询该用户所有表信息
- SELECT
+SELECT
     'DEV'                                                     AS SCHEMANAME,
     utc.TABLE_NAME                                                        AS TABLENAME,
     utc.COLUMN_NAME                          AS COLNAME,
@@ -57,9 +59,7 @@ LEFT JOIN
 ON
     ucc.constraint_name = uc.constraint_name
 WHERE
-    utc.TABLE_NAME = 'test_1'
-AND uc.index_name IS NOT NULL
+    uc.index_name IS NOT NULL
 OR  (
-        utc.TABLE_NAME = 'test_1'
-    AND uc.index_name IS NULL
+    uc.index_name IS NULL
     AND ucc.constraint_name IS NULL)

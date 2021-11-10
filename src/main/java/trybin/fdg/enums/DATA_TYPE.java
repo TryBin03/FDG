@@ -1,6 +1,9 @@
 package trybin.fdg.enums;
 
-public enum MySQL_DATA_TYPE {
+/**
+ * @author TryBin
+ */
+public enum DATA_TYPE {
     DATE,
     TIME,
     YEAR,

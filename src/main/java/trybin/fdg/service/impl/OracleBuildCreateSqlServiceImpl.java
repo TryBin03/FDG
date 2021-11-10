@@ -6,7 +6,7 @@ import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
-import trybin.fdg.enums.MySQL_DATA_TYPE;
+import trybin.fdg.enums.DATA_TYPE;
 import trybin.fdg.service.BuildCreateSqlService;
 import trybin.fdg.util.DataGenerateUtil;
 import trybin.fdg.util.DateUtils;
@@ -69,14 +69,25 @@ public class OracleBuildCreateSqlServiceImpl implements BuildCreateSqlService {
                 String typename = column.getTypename();
                 // 主键
                 if (!(CollectionUtils.isEmpty(userDefinedValueContainer)) && userDefinedValueContainer.containsKey(column.getColname())){
-                    sqlSb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
+                    if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+                        sqlSb.append("to_date('");
+                        sqlSb.append(userDefinedValueContainer.get(column.getColname()).getValue());
+                        sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
+                    }else if (StringUtils.containsAnyIgnoreCase(typename, DATA_TYPE.TIMESTAMP.name())){
+                        sqlSb.append("to_timestamp('");
+                        sqlSb.append(userDefinedValueContainer.get(column.getColname()).getValue());
+                        sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
+                    }else {
+                        sqlSb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
+                    }
+
                 } else if (keys.contains(column.getColname())) {
                     // 排除时间类型
-                    if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATE.name(), typename)){
+                    if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
                         sqlSb.append("to_date('");
                         sqlSb.append(DateUtils.formatDate(DateUtils.getDayAfterDate(DateUtils.getDate("0021-11-09"),index.intValue()), DateUtils.FORMAT_YYYY_MM_DD));
                         sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
-                    }else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)){
+                    }else if (StringUtils.containsAnyIgnoreCase(typename, DATA_TYPE.TIMESTAMP.name())){
                         sqlSb.append("to_timestamp('");
                         sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("0021-11-09 00:00:00"),index.intValue()),DateUtils.FORMAT_YYYY_MM_DD_HH_MM_SS));
                         sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
@@ -86,11 +97,11 @@ public class OracleBuildCreateSqlServiceImpl implements BuildCreateSqlService {
                     }
                 }else {
                     // 排除时间类型
-                    if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.DATE.name(), typename)){
+                    if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
                         sqlSb.append("to_date('");
                         sqlSb.append("0021-11-09");
                         sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
-                    } else if (StringUtils.equalsIgnoreCase(MySQL_DATA_TYPE.TIMESTAMP.name(), typename)){
+                    } else if (StringUtils.containsAnyIgnoreCase(typename, DATA_TYPE.TIMESTAMP.name())){
                         sqlSb.append("to_timestamp('");
                         sqlSb.append("0021-11-09 00:00:00");
                         sqlSb.append("' , 'yyyy-mm-dd hh24:mi:ss')");

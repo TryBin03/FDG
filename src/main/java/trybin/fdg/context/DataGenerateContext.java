@@ -36,4 +36,6 @@ public class DataGenerateContext {
     private Map<String, Map<String, List<Columns>>> tableStructureContainer;
     private Map<String, Map<String, List<Columns>>> notKeyColumnsContainer;
     private Map<String, Map<String, List<Columns>>> keyColumnsContainer;
+
+    private String oracleUserName;
 }

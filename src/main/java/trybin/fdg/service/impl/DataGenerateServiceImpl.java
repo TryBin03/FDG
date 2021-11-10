@@ -13,6 +13,7 @@ import trybin.fdg.exception.DataGenerateException;
 import trybin.fdg.factory.BuildCreateSqlServiceFactory;
 import trybin.fdg.factory.DataRemoveServiceFactory;
 import trybin.fdg.factory.ReadDatabaseResourcesServiceFactory;
+import trybin.fdg.factory.VerificationConfigServiceFactory;
 import trybin.fdg.service.*;
 import trybin.fdg.service.helper.ConfigAnalysisHelper;
 import trybin.fdg.util.DataGenerateUtil;
@@ -49,9 +50,6 @@ public class DataGenerateServiceImpl implements DataGenerateService {
     private SqlExecuteService sqlExecuteService;
 
     @Autowired
-    private DataRemoveService dataRemoveService;
-
-    @Autowired
     private ConfigAnalysisHelper configAnalysisHelper;
 
     @Autowired
@@ -59,9 +57,6 @@ public class DataGenerateServiceImpl implements DataGenerateService {
 
     @Autowired
     private FdgSingleTableConfig fdgSingleTableConfig;
-
-    @Autowired
-    private VerificationConfigService verificationConfigService;
 
     @Autowired
     private ReadDatabaseResourcesServiceFactory readDatabaseResourcesServiceFactory;
@@ -72,16 +67,20 @@ public class DataGenerateServiceImpl implements DataGenerateService {
     @Autowired
     private BuildCreateSqlServiceFactory buildCreateSqlServiceFactory;
 
+    @Autowired
+    private VerificationConfigServiceFactory verificationConfigServiceFactory;
+
     @Override
     public void process() {
         DataGenerateContext dataGenerateContext = structureContext();
+        final String datasourceTypeStr = dataGenerateContext.getDatasourceType().name();
         List<Columns> columns = readDatabaseResourcesServiceFactory
-                .getReadDatabaseResourcesServiceIns(dataGenerateContext.getDatasourceType().name())
+                .getReadDatabaseResourcesServiceIns(datasourceTypeStr)
                 .getColumns(dataGenerateContext);
         // 删除旧数据
         if (deleteOldDataFlag) {
             dataRemoveServiceFactory
-                    .getDataRemoveServiceIns(dataGenerateContext.getDatasourceType().name())
+                    .getDataRemoveServiceIns(datasourceTypeStr)
                     .process(DataGenerateUtil.getNotKey(columns), dataGenerateContext);
         }
 
@@ -89,7 +88,7 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         log.info("数据生成中...");
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = buildCreateSqlServiceFactory
-                .getBuildCreateSqlServiceIns(dataGenerateContext.getDatasourceType().name())
+                .getBuildCreateSqlServiceIns(datasourceTypeStr)
                 .execute(columns, keys, dataGenerateContext);
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", dataGenerateContext.getIndex().get(), (System.currentTimeMillis() - dataForm) / 1000D);
         log.info("数据插入中...");
@@ -113,14 +112,15 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         long dataForm = System.currentTimeMillis();
         List<String> insertSqlBach = new ArrayList<>();
         Map<String, Map<String, List<Columns>>> tableStructureContainer = dataGenerateContext.getTableStructureContainer();
-        Map<String, Map<String, List<Columns>>> notKeyColumnsContainer = dataGenerateContext.getNotKeyColumnsContainer();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = dataGenerateContext.getKeyColumnsContainer();
         AtomicLong size = new AtomicLong(0);
         dataGenerateContext.getDataGenerateContextList().forEach(context->{
-            insertSqlBach.addAll(buildCreateSqlServiceFactory.getBuildCreateSqlServiceIns(context.getDatasourceType().name()).execute(
-                    tableStructureContainer.get(context.getSchema()).get(context.getTable()),
-                    keyColumnsContainer.get(context.getSchema()).get(context.getTable()).stream().map(Columns::getColname).collect(Collectors.toSet()),
-                    context));
+            insertSqlBach.addAll(buildCreateSqlServiceFactory
+                    .getBuildCreateSqlServiceIns(context.getDatasourceType().name())
+                    .execute(
+                            tableStructureContainer.get(context.getSchema()).get(context.getTable()),
+                            keyColumnsContainer.get(context.getSchema()).get(context.getTable()).stream().map(Columns::getColname).collect(Collectors.toSet()),
+                            context));
             size.addAndGet(context.getIndex().get());
         });
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
@@ -135,12 +135,15 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         dataGenerateContext.setSqlValuesCount(sqlValuesCount);
         dataGenerateContext.setIndex(new AtomicLong(0));
         dataGenerateContext.setDatasourceType(DATASOURCE_TYPE.getType(datasourceType));
+        final String datasourceTypeStr = dataGenerateContext.getDatasourceType().name();
         readDatabaseResourcesServiceFactory
-                .getReadDatabaseResourcesServiceIns(dataGenerateContext.getDatasourceType().name())
+                .getReadDatabaseResourcesServiceIns(datasourceTypeStr)
                 .batchFindColumns(dataGenerateContext);
         // 解析
         configAnalysisHelper.batchAnalysis(fdgBachConfig.getGroupList(), dataGenerateContext);
         // 校验
+        VerificationConfigService verificationConfigService = verificationConfigServiceFactory
+                .getVerificationConfigServiceInsIns(datasourceTypeStr);
         if (verificationConfigService.isAdopt(verificationConfigService.execute(dataGenerateContext))) {
             log.error("配置校验未通过，请检查配置。");
             throw new DataGenerateException("配置校验未通过，请检查配置。");
@@ -160,6 +163,8 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         // 解析
         configAnalysisHelper.analysis(fdgSingleTableConfig.getValueList(), dataGenerateContext);
         // 校验
+        VerificationConfigService verificationConfigService = verificationConfigServiceFactory
+                .getVerificationConfigServiceInsIns(dataGenerateContext.getDatasourceType().name());
         if (verificationConfigService.isAdopt(verificationConfigService.execute(dataGenerateContext))) {
             log.error("配置校验未通过，请检查配置。");
             throw new DataGenerateException("配置校验未通过，请检查配置。");

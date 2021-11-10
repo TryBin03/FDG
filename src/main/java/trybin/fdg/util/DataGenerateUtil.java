@@ -8,6 +8,7 @@ import trybin.fdg.entity.batchconfig.Value;
 import trybin.fdg.exception.DataGenerateException;
 import trybin.fdg.service.SqlExecuteService;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,16 @@ public class DataGenerateUtil {
             if (length1.bitLength() > indexLength){
                 return index + StringUtils.right(timeMillis, length1.bitLength() - indexLength);
             }
-            return StringUtils.right(index, length1.bitLength() == 1 ? length1.bitLength() : length1.bitLength()-1);
+            return StringUtils.right(index, length1.bitLength() == 1 ? length1.bitLength() : length1.bitLength() - 1);
+        }else if (length instanceof BigDecimal){
+            BigDecimal length1 = (BigDecimal) length;
+            if (length1.intValueExact() > timeMillis.length() + indexLength){
+                return index + timeMillis;
+            }
+            if (length1.intValueExact() > indexLength){
+                return index + StringUtils.right(timeMillis, length1.intValueExact() - indexLength);
+            }
+            return StringUtils.right(index, length1.intValueExact() == 1 ? length1.intValueExact() : length1.intValueExact() - 1);
         }
         throw new DataGenerateException("getIndex 函数 中 传入数据类型不正确 "+ length.getClass());
     }
