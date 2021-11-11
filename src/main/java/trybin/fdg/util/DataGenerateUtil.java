@@ -78,8 +78,21 @@ public class DataGenerateUtil {
                 return index + StringUtils.right(timeMillis, length1.intValueExact() - indexLength);
             }
             return StringUtils.right(index, length1.intValueExact() == 1 ? length1.intValueExact() : length1.intValueExact() - 1);
+        }else if (length instanceof Integer){
+            int length1 = (Integer) length;
+            if (length1 > timeMillis.length() + indexLength){
+                return index + timeMillis;
+            }
+            if (length1 > indexLength){
+                String s = index + StringUtils.right(timeMillis, length1 - indexLength);
+                if (Long.parseLong(s) > Integer.MAX_VALUE) {
+                    s = StringUtils.left(s, s.length() - 1);
+                }
+                return s;
+            }
+            return StringUtils.right(index, length1 == 1 ? length1 : length1 - 1);
         }
-        throw new DataGenerateException("getIndex 函数 中 传入数据类型不正确 "+ length.getClass());
+        throw new DataGenerateException("getIndex 函数 中 传入数据类型不正确，传入数据类型为"+ length.getClass());
     }
 
     public static void insertBatch(SqlExecuteService sqlExecuteService, List<String> sqlBatch){

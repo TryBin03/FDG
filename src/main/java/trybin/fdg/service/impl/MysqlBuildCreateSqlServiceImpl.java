@@ -63,7 +63,7 @@ public class MysqlBuildCreateSqlServiceImpl implements BuildCreateSqlService {
             for (Columns column : columns) {
                 sqlSb.append("'");
                 String typename = column.getTypename();
-                // 主键
+                // 用户自定义
                 if (!(CollectionUtils.isEmpty(userDefinedValueContainer)) && userDefinedValueContainer.containsKey(column.getColname())){
                     Value value = userDefinedValueContainer.get(column.getColname());
                     // todo 暂时支持用户自定义数据增
@@ -74,6 +74,7 @@ public class MysqlBuildCreateSqlServiceImpl implements BuildCreateSqlService {
 //                        sqlSb.append(value.getValue());
 //                    }
                     sqlSb.append(value.getValue());
+                // 主键
                 } else if (keys.contains(column.getColname())) {
                     // 排除时间类型
                     if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){

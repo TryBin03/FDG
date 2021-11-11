@@ -11,6 +11,7 @@ import trybin.fdg.entity.batchconfig.Value;
 import trybin.fdg.enums.DATA_TYPE;
 import trybin.fdg.service.DataRemoveService;
 import trybin.fdg.service.SqlExecuteService;
+import trybin.fdg.util.DateUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,8 @@ import java.util.concurrent.*;
  * @author TryBin
  */
 @Slf4j
-@Component("MysqlDataRemoveService")
-public class MysqlDataRemoveServiceImpl implements DataRemoveService {
+@Component("SqlServerDataRemoveService")
+public class SqlServerDataRemoveServiceImpl implements DataRemoveService {
 
     @Autowired
     private SqlExecuteService sqlExecuteService;
@@ -76,29 +77,31 @@ public class MysqlDataRemoveServiceImpl implements DataRemoveService {
         sb.append("DELETE FROM ").append(schema).append(".").append(table);
         sb.append(" WHERE ");
         columnsNotKet.forEach(column -> {
-            sb.append(column.getColname()).append(" = ").append("'");
+            sb.append(column.getColname()).append(" = ");
             String typename = column.getTypename();
             // 用户自定义值
             if (!(CollectionUtils.isEmpty(userDefinedValueContainer)) && userDefinedValueContainer.containsKey(column.getColname())) {
-                sb.append(userDefinedValueContainer.get(column.getColname()).getValue());
+                sb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
             }
             // 排除时间类型
-            else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)) {
-                sb.append("1970-01-01");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
-                sb.append("00:00:00");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)) {
-                sb.append("1970-01-01 00:00:00");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIMESTAMP.name(), typename)) {
-                sb.append("1970-01-01 08:00:01");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.YEAR.name(), typename)) {
-                sb.append("1970");
+            else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+                sb.append("CAST('1970-01-01' AS DATE)");
+            } else if(StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
+                sb.append("CAST('00:00:00' AS TIME)");
+            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)){
+                sb.append("CAST('1970-01-01 00:00:00' AS DATETIME)");
+            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME2.name(), typename)){
+                sb.append("CAST('1970-01-01 00:00:00' AS DATETIME2)");
+            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIMEOFFSET.name(), typename)){
+                sb.append("CAST('1970-01-01 00:00:00' AS DATETIMEOFFSET)");
+            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.SMALLDATETIME.name(), typename)){
+                sb.append("CAST('1970-01-01 00:00:00' AS SMALLDATETIME)");
             }
             // 默认为 1
             else {
-                sb.append("1");
+                sb.append("'1'");
             }
-            sb.append("'").append(" AND ");
+            sb.append(" AND ");
         });
         sb.delete(sb.length() - 4, sb.length());
         return sb.toString();

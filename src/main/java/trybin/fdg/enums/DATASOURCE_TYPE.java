@@ -12,7 +12,7 @@ public enum DATASOURCE_TYPE {
     MySQL,
     DB2,
     Oracle,
-    Sql_Server;
+    SqlServer;
 
     public static DATASOURCE_TYPE getType(String datasourceType){
         for (DATASOURCE_TYPE value : DATASOURCE_TYPE.values()) {

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
@@ -78,7 +79,7 @@ public class OracleDataRemoveServiceImpl implements DataRemoveService {
             sb.append("\"").append(column.getColname()).append("\"").append(" = ");
             String typename = column.getTypename();
             // 用户自定义值
-            if (userDefinedValueContainer.containsKey(column.getColname())) {
+            if (!(CollectionUtils.isEmpty(userDefinedValueContainer)) && userDefinedValueContainer.containsKey(column.getColname())) {
                 sb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
             }
             // 排除时间类型

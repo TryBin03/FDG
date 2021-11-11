@@ -67,8 +67,9 @@ public class OracleBuildCreateSqlServiceImpl implements BuildCreateSqlService {
             sqlSb.append("(");
             for (Columns column : columns) {
                 String typename = column.getTypename();
-                // 主键
+                // 用户自定义
                 if (!(CollectionUtils.isEmpty(userDefinedValueContainer)) && userDefinedValueContainer.containsKey(column.getColname())){
+                    // 排除时间类型
                     if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
                         sqlSb.append("to_date('");
                         sqlSb.append(userDefinedValueContainer.get(column.getColname()).getValue());
@@ -80,7 +81,7 @@ public class OracleBuildCreateSqlServiceImpl implements BuildCreateSqlService {
                     }else {
                         sqlSb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
                     }
-
+                // 主键
                 } else if (keys.contains(column.getColname())) {
                     // 排除时间类型
                     if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
@@ -95,6 +96,7 @@ public class OracleBuildCreateSqlServiceImpl implements BuildCreateSqlService {
                     else {
                         sqlSb.append("'").append(DataGenerateUtil.getIndex(index.get(),column.getLength())).append("'");
                     }
+                // 系统默认
                 }else {
                     // 排除时间类型
                     if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
