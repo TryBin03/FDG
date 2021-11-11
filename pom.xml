@@ -19,7 +19,7 @@
         <ojdbc8.version>21.1.0.0</ojdbc8.version>
         <mssql-jdbc.version>9.4.0.jre8</mssql-jdbc.version>
         <druid.version>1.2.5</druid.version>
-        <commons-collections.version>3.2.1</commons-collections.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-lang.version>2.6</commons-lang.version>
         <pagehelper.version>5.2.0</pagehelper.version>
