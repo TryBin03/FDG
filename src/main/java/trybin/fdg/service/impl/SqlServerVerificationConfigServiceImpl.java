@@ -40,14 +40,12 @@ public class SqlServerVerificationConfigServiceImpl implements VerificationConfi
         List<VerificationTable> verificationTableList = sqlExecuteService.selectList(findVerificationTableSql, VerificationTable.class);
         List<String> databaseTableNames = verificationTableList.stream().map(VerificationTable::getTableId).collect(Collectors.toList());
         List<String> tableNames = new ArrayList<>(tableContainer.keySet());
-        if (!databaseTableNames.containsAll(tableNames)) {
-            tableNames.forEach((tableName) -> {
-                if (databaseTableNames.contains(tableName)) {
-                    log.error("在数据库中没有找到 {} 表，请检查配置。", tableName);
-                    exceptionContainer.add("在数据库中没有找到 " + tableName + " 表，请检查配置。");
-                }
-            });
-        }
+        tableNames.forEach((tableName) -> {
+            if (!databaseTableNames.contains(tableName)) {
+                log.error("在数据库中没有找到 {} 表，请检查配置。", tableName);
+                exceptionContainer.add("在数据库中没有找到 " + tableName + " 表，请检查配置。");
+            }
+        });
 
         Map<String, Value> valuesContainer = dataGenerateContext.getValuesContainer();
         String findVerificationColumnSql = "SELECT\n" +
@@ -60,14 +58,12 @@ public class SqlServerVerificationConfigServiceImpl implements VerificationConfi
 
         List<String> databaseColumnNames = verificationColumnsList.stream().map(VerificationColumns::getColumnId).collect(Collectors.toList());
         List<String> columnNames = new ArrayList<>(valuesContainer.keySet());
-        if (!databaseColumnNames.containsAll(columnNames)) {
-            columnNames.forEach((columnName) -> {
-                if (databaseTableNames.contains(columnName)) {
-                    log.error("在数据库中没有找到 {} 列，请检查配置。", columnName);
-                    exceptionContainer.add("在数据库中没有找到 " + columnName + " 列，请检查配置。");
-                }
-            });
-        }
+        columnNames.forEach((columnName) -> {
+            if (!databaseColumnNames.contains(columnName)) {
+                log.error("在数据库中没有找到 {} 列，请检查配置。", columnName);
+                exceptionContainer.add("在数据库中没有找到 " + columnName + " 列，请检查配置。");
+            }
+        });
         return exceptionContainer;
     }
 

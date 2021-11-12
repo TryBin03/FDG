@@ -20,7 +20,7 @@ import java.util.concurrent.*;
  * @author TryBin
  */
 @Slf4j
-@Component("MysqlDataRemoveService")
+@Component("MySQLDataRemoveService")
 public class MysqlDataRemoveServiceImpl implements DataRemoveService {
 
     @Autowired

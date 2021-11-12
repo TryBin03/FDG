@@ -74,8 +74,8 @@ public class SqlServerReadDatabaseResourcesServiceImpl implements ReadDatabaseRe
                 "    col.TABLE_NAME = keycol.TABLE_NAME\n" +
                 "AND col.COLUMN_NAME = keycol.COLUMN_NAME\n" +
                 "WHERE\n" +
-                "    col.TABLE_NAME = '${REP0}'\n" +
-                "AND col.TABLE_SCHEMA = '${REP1}'\n" +
+                "    col.TABLE_SCHEMA = '${REP0}'\n" +
+                "AND col.TABLE_NAME = '${REP1}'\n" +
                 "ORDER BY\n" +
                 "    col.TABLE_NAME";
         String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);

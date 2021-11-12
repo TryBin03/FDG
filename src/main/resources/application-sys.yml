@@ -1,7 +1,7 @@
 fdg:
 # 系统配置
   delete-old-data-flag: true
-  batch-flag: true
+  batch-flag: false
   submit-count: 2500
   sql-values-count: 10
 
@@ -10,8 +10,8 @@ fdg:
 fdg:
   single-table:
     table: test_1
-    schema: DEV
-    count: 100
+    schema: dbo
+    count: 10000
     value-list:
       - column-name: key1
         value: 111
@@ -30,9 +30,6 @@ fdg:
           - schema-name: dbo
             table-name: test_2
             count: 12
-          - schema-name: dbo
-            table-name: test_3
-            count: 1000
         value-list:
           - schema-name: dbo
             table-name: test_1

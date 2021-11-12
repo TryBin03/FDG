@@ -29,7 +29,6 @@ SELECT
     TABLE_NAME                               TABLENAME
 FROM
     user_constraints
-WHERE INDEX_OWNER = 'DEV'
 
 --查询所有列    DEV 为用户名
 SELECT
