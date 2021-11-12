@@ -8,7 +8,7 @@ import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
-import trybin.fdg.enums.DATA_TYPE;
+import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.DataRemoveService;
 import trybin.fdg.service.SqlExecuteService;
 
@@ -83,11 +83,11 @@ public class OracleDataRemoveServiceImpl implements DataRemoveService {
                 sb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
             }
             // 排除时间类型
-            else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+            else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATE.name(), typename)){
                 sb.append("to_date('");
                 sb.append("0021-11-09");
                 sb.append("' , 'yyyy-mm-dd hh24:mi:ss')");
-            } else if (StringUtils.containsAnyIgnoreCase(typename, DATA_TYPE.TIMESTAMP.name())){
+            } else if (StringUtils.containsAnyIgnoreCase(typename, DATE_TYPE.TIMESTAMP.name())){
                 sb.append("to_timestamp('");
                 sb.append("0021-11-09 00:00:00");
                 sb.append("' , 'yyyy-mm-dd hh24:mi:ss')");

@@ -30,7 +30,7 @@ public class SqlServerReadDatabaseResourcesServiceImpl implements ReadDatabaseRe
                 "    col.TABLE_NAME                                           AS TABLENAME,\n" +
                 "    col.COLUMN_NAME                                            AS COLNAME,\n" +
                 "    IIF ( keycol.COLUMN_NAME IS NULL, NULL, 1)                   AS KEYSEQ,\n" +
-                "    col.DATA_TYPE                                                   TYPENAME,\n" +
+                "    col.DATE_TYPE                                                   TYPENAME,\n" +
                 "    COALESCE(col.CHARACTER_MAXIMUM_LENGTH,col.NUMERIC_PRECISION)    LENGTH\n" +
                 "FROM\n" +
                 "    INFORMATION_SCHEMA.COLUMNS col\n" +
@@ -64,7 +64,7 @@ public class SqlServerReadDatabaseResourcesServiceImpl implements ReadDatabaseRe
         String getColNameSql = "SELECT\n" +
                 "    col.COLUMN_NAME                                           AS COLNAME,\n" +
                 "    IIF ( keycol.COLUMN_NAME IS NULL, NULL, 1)                   AS KEYSEQ,\n" +
-                "    col.DATA_TYPE                                                   TYPENAME,\n" +
+                "    col.DATE_TYPE                                                   TYPENAME,\n" +
                 "    COALESCE(col.CHARACTER_MAXIMUM_LENGTH,col.NUMERIC_PRECISION)    LENGTH\n" +
                 "FROM\n" +
                 "    INFORMATION_SCHEMA.COLUMNS col\n" +

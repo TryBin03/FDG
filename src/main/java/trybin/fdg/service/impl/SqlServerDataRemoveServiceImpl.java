@@ -8,10 +8,9 @@ import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
-import trybin.fdg.enums.DATA_TYPE;
+import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.DataRemoveService;
 import trybin.fdg.service.SqlExecuteService;
-import trybin.fdg.util.DateUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -84,17 +83,17 @@ public class SqlServerDataRemoveServiceImpl implements DataRemoveService {
                 sb.append("'").append(userDefinedValueContainer.get(column.getColname()).getValue()).append("'");
             }
             // 排除时间类型
-            else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+            else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATE.name(), typename)){
                 sb.append("CAST('1970-01-01' AS DATE)");
-            } else if(StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
+            } else if(StringUtils.equalsIgnoreCase(DATE_TYPE.TIME.name(), typename)) {
                 sb.append("CAST('00:00:00' AS TIME)");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)){
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIME.name(), typename)){
                 sb.append("CAST('1970-01-01 00:00:00' AS DATETIME)");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME2.name(), typename)){
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIME2.name(), typename)){
                 sb.append("CAST('1970-01-01 00:00:00' AS DATETIME2)");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIMEOFFSET.name(), typename)){
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIMEOFFSET.name(), typename)){
                 sb.append("CAST('1970-01-01 00:00:00' AS DATETIMEOFFSET)");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.SMALLDATETIME.name(), typename)){
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.SMALLDATETIME.name(), typename)){
                 sb.append("CAST('1970-01-01 00:00:00' AS SMALLDATETIME)");
             }
             // 默认为 1

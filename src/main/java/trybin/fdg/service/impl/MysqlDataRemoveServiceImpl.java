@@ -8,7 +8,7 @@ import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
-import trybin.fdg.enums.DATA_TYPE;
+import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.DataRemoveService;
 import trybin.fdg.service.SqlExecuteService;
 
@@ -83,15 +83,15 @@ public class MysqlDataRemoveServiceImpl implements DataRemoveService {
                 sb.append(userDefinedValueContainer.get(column.getColname()).getValue());
             }
             // 排除时间类型
-            else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)) {
+            else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATE.name(), typename)) {
                 sb.append("1970-01-01");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.TIME.name(), typename)) {
                 sb.append("00:00:00");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)) {
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIME.name(), typename)) {
                 sb.append("1970-01-01 00:00:00");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIMESTAMP.name(), typename)) {
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.TIMESTAMP.name(), typename)) {
                 sb.append("1970-01-01 08:00:01");
-            } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.YEAR.name(), typename)) {
+            } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.YEAR.name(), typename)) {
                 sb.append("1970");
             }
             // 默认为 1

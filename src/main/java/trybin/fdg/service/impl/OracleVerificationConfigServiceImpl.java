@@ -9,9 +9,11 @@ import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.VerificationColumns;
 import trybin.fdg.entity.VerificationTable;
 import trybin.fdg.entity.batchconfig.Value;
+import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.SqlExecuteService;
 import trybin.fdg.service.VerificationConfigService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,15 +55,32 @@ public class OracleVerificationConfigServiceImpl implements VerificationConfigSe
         String findVerificationColumnSql = "SELECT\n" +
                     "    '"+ StringUtils.upperCase(oracleUserName) +"'||'.'||TABLE_NAME||'.'||COLUMN_NAME COLUMNID,\n" +
                     "    COLUMN_NAME                                           COLUMNNAME,\n" +
-                    "    DATA_TYPE\n" +
+                    "    DATA_TYPE,\n" +
+                    "    DATA_LENGTH AS LENGTH\n" +
                     "FROM\n" +
                     "    user_tab_columns";
         List<VerificationColumns> verificationColumnsList = sqlExecuteService.selectList(findVerificationColumnSql, VerificationColumns.class);
 
         List<String> databaseColumnNames = verificationColumnsList.stream().map(VerificationColumns::getColumnId).collect(Collectors.toList());
+        Map<String, VerificationColumns> verificationColumnsContainer = verificationColumnsList.stream().collect(Collectors.toMap(VerificationColumns::getColumnId, verificationColumns -> verificationColumns));
         List<String> columnNames = new ArrayList<>(valuesContainer.keySet());
         columnNames.forEach((columnName) -> {
-            if (!databaseColumnNames.contains(columnName)) {
+            String tableName = StringUtils.left(columnName, columnName.lastIndexOf("."));
+            Long count = tableContainer.get(tableName);
+            if (databaseColumnNames.contains(columnName)) {
+                Object length = verificationColumnsContainer.get(columnName).getLength();
+                if (length != null) {
+                    int i = ((BigDecimal) length).intValue();
+                    if (count > Math.pow(10 ,i)){
+                        log.error("所传入数据量 {} ，超过 {} 列最大长度 {}。", count, columnName, i);
+                        exceptionContainer.add("所传入数据量 "+ count +" ，超过 "+ columnName +" 列最大长度 "+ i +"。");
+                    }
+                    if (DATE_TYPE.contains(verificationColumnsContainer.get(columnName).getDataType()) && i < valuesContainer.get(columnName).getValue().length()) {
+                        log.error("所传入的 {} 列，超出所设置最大长度，请检查配置。", columnName);
+                        exceptionContainer.add("所传入的 " + columnName + " 列，超出所设置最大长度，请检查配置。");
+                    }
+                }
+            }else {
                 log.error("在数据库中没有找到 {} 列，请检查配置。", columnName);
                 exceptionContainer.add("在数据库中没有找到 " + columnName + " 列，请检查配置。");
             }

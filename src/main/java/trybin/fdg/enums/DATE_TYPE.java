@@ -1,5 +1,7 @@
 package trybin.fdg.enums;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * <p>DB 时间类型</p>
  * <ul>
@@ -19,7 +21,7 @@ package trybin.fdg.enums;
  * </ul>
  * @author TryBin
  */
-public enum DATA_TYPE {
+public enum DATE_TYPE {
     DATE,
     TIME,
     YEAR,
@@ -28,4 +30,11 @@ public enum DATA_TYPE {
     DATETIME2,
     DATETIMEOFFSET,
     SMALLDATETIME;
+
+    public static Boolean contains(String typeStr){
+        for (DATE_TYPE value : DATE_TYPE.values()) {
+            return StringUtils.equalsIgnoreCase(value.name(), typeStr);
+        }
+        return false;
+    }
 }

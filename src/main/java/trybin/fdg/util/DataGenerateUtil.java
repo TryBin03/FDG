@@ -85,9 +85,9 @@ public class DataGenerateUtil {
             }
             if (length1 > indexLength){
                 String s = index + StringUtils.right(timeMillis, length1 - indexLength);
-                if (Long.parseLong(s) > Integer.MAX_VALUE) {
-                    s = StringUtils.left(s, s.length() - 1);
-                }
+//                if (Long.parseLong(s) > Integer.MAX_VALUE) {
+//                    s = "-1";
+//                }
                 return s;
             }
             return StringUtils.right(index, length1 == 1 ? length1 : length1 - 1);

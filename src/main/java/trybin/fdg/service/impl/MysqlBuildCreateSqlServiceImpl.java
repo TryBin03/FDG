@@ -6,9 +6,8 @@ import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
-import trybin.fdg.enums.DATA_TYPE;
+import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.BuildCreateSqlService;
-import trybin.fdg.util.DataGenerateUtil;
 import trybin.fdg.util.DateUtils;
 
 import java.util.ArrayList;
@@ -77,32 +76,33 @@ public class MysqlBuildCreateSqlServiceImpl implements BuildCreateSqlService {
                 // 主键
                 } else if (keys.contains(column.getColname())) {
                     // 排除时间类型
-                    if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+                    if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATE.name(), typename)){
                         sqlSb.append(DateUtils.formatDate(DateUtils.getDayAfterDate(DateUtils.getDate("1970-01-01"),index.intValue()), DateUtils.FORMAT_YYYY_MM_DD));
-                    } else if(StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
+                    } else if(StringUtils.equalsIgnoreCase(DATE_TYPE.TIME.name(), typename)) {
                         sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("00:00:00"),index.intValue()), DateUtils.FORMAT_HH_MM_SS));
-                    } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)){
+                    } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIME.name(), typename)){
                         sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("1970-01-01 00:00:00"),index.intValue()),DateUtils.FORMAT_YYYY_MM_DD_HH_MM_SS));
-                    }else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIMESTAMP.name(), typename)){
+                    }else if (StringUtils.equalsIgnoreCase(DATE_TYPE.TIMESTAMP.name(), typename)){
                         sqlSb.append(DateUtils.formatDate(DateUtils.getSecondAfterDate(DateUtils.getDate("1970-01-01 08:00:01"),index.intValue()),DateUtils.FORMAT_YYYY_MM_DD_HH_MM_SS));
-                    } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.YEAR.name(), typename)){
+                    } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.YEAR.name(), typename)){
                         sqlSb.append(DateUtils.formatDate(DateUtils.getYearAfterDate(DateUtils.getDate("1970"),index.intValue()), DateUtils.FORMAT_YYYY));
                     }
                     else {
-                        sqlSb.append(DataGenerateUtil.getIndex(index.get(),column.getLength()));
+                        //sqlSb.append(DataGenerateUtil.getIndex(index.get(),column.getLength()));
+                        sqlSb.append(index.get());
                     }
                 }else {
                     // 排除时间类型
-                    if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATE.name(), typename)){
+                    if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATE.name(), typename)){
                         sqlSb.append("1970-01-01");
-                    } else if(StringUtils.equalsIgnoreCase(DATA_TYPE.TIME.name(), typename)) {
+                    } else if(StringUtils.equalsIgnoreCase(DATE_TYPE.TIME.name(), typename)) {
                         sqlSb.append("00:00:00");
-                    } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.DATETIME.name(), typename)){
+                    } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.DATETIME.name(), typename)){
                         sqlSb.append("1970-01-01 00:00:00");
-                    } else if (StringUtils.equalsIgnoreCase(DATA_TYPE.TIMESTAMP.name(), typename)){
+                    } else if (StringUtils.equalsIgnoreCase(DATE_TYPE.TIMESTAMP.name(), typename)){
                         sqlSb.append("1970-01-01 08:00:01");
                     }
-                    else if (StringUtils.equalsIgnoreCase(DATA_TYPE.YEAR.name(), typename)){
+                    else if (StringUtils.equalsIgnoreCase(DATE_TYPE.YEAR.name(), typename)){
                         sqlSb.append("1970");
                     }
                     // 默认插入 1

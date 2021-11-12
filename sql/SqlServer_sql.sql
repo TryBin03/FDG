@@ -25,7 +25,8 @@ FROM
 SELECT
     col.TABLE_SCHEMA+'.'+col.TABLE_NAME+'.'+col.COLUMN_NAME AS COLUMNID,
     col.COLUMN_NAME                                         AS COLUMNNAME,
-    col.DATA_TYPE
+    col.DATA_TYPE,
+    COALESCE(col.CHARACTER_MAXIMUM_LENGTH,col.NUMERIC_PRECISION) LENGTH
 FROM
     INFORMATION_SCHEMA.COLUMNS col
 --查询该用户所有表信息

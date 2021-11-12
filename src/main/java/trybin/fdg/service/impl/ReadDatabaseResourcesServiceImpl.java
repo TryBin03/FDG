@@ -25,7 +25,7 @@ public class ReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesSe
 
     @Override
     public void batchFindColumns(DataGenerateContext dataGenerateContext) {
-        String batchFindNotKeyColumnsSql = "select TABLE_SCHEMA as SCHEMANAME, TABLE_NAME as TABLENAME, COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema') ORDER BY ORDINAL_POSITION";
+        String batchFindNotKeyColumnsSql = "select TABLE_SCHEMA as SCHEMANAME, TABLE_NAME as TABLENAME, COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATE_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema') ORDER BY ORDINAL_POSITION";
         List<Columns> columns = sqlExecuteService.selectList(batchFindNotKeyColumnsSql, Columns.class);
         Map<String, Map<String, List<Columns>>> tableStructureContainer = new HashMap<>();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = new HashMap<>();
@@ -46,7 +46,7 @@ public class ReadDatabaseResourcesServiceImpl implements ReadDatabaseResourcesSe
 
     @Override
     public List<Columns> getColumns(DataGenerateContext dataGenerateContext) {
-        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATA_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
+        String getColNameSql = "select COLUMN_NAME as COLNAME, IF(COLUMN_KEY = 'PRI',1,null) as KEYSEQ, DATE_TYPE as TYPENAME, CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) as UNSIGNED ) LENGTH from information_schema.columns where table_schema = '${REP0}' and table_name = '${REP1}' ORDER BY ORDINAL_POSITION";
         String findColumnsSql = DataGenerateUtil.perfectFindColumnsSql(dataGenerateContext, getColNameSql);
         return sqlExecuteService.selectList(findColumnsSql, Columns.class);
     }

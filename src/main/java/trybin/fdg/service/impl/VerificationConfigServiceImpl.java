@@ -59,12 +59,12 @@ public class VerificationConfigServiceImpl implements VerificationConfigService 
         Map<String, Value> valuesContainer = dataGenerateContext.getValuesContainer();
         String findVerificationColumnSql = "";
         if (DATASOURCE_TYPE.MySQL == datasourceType) {
-            findVerificationColumnSql = "select CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) COLUMNID, COLUMN_NAME COLUMNNAME, DATA_TYPE from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
+            findVerificationColumnSql = "select CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) COLUMNID, COLUMN_NAME COLUMNNAME, DATE_TYPE from information_schema.columns where table_schema not in ('information_schema','mysql','performance_schema')";
         } else if (DATASOURCE_TYPE.Oracle == datasourceType) {
             findVerificationColumnSql = "SELECT\n" +
                     "    '"+ dataGenerateContext.getSchema() +"'||'.'||TABLE_NAME||'.'||COLUMN_NAME COLUMNID,\n" +
                     "    COLUMN_NAME                                           COLUMNNAME,\n" +
-                    "    DATA_TYPE\n" +
+                    "    DATE_TYPE\n" +
                     "FROM\n" +
                     "    user_tab_columns";
         }
