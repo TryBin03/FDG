@@ -10,7 +10,7 @@ fdg:
 fdg:
   single-table:
     table: test_1
-    schema: DEV
+    schema: dbo
     count: 10000
     value-list:
       - column-name: key1
@@ -24,22 +24,22 @@ fdg:
   batch:
     group-list:
       - table-list:
-          - schema-name: DEV
+          - schema-name: dbo
             table-name: test_1
             count: 10000
-          - schema-name: DEV
+          - schema-name: dbo
             table-name: test_2
             count: 12000
         value-list:
-          - schema-name: DEV
+          - schema-name: dbo
             table-name: test_1
             column-name: key1
             value: 111
-          - schema-name: DEV
+          - schema-name: dbo
             table-name: test_2
             column-name: key1
             value: 111
-          - schema-name: DEV
+          - schema-name: dbo
             table-name: test_2
             column-name: key3
             value: 2021-11-10

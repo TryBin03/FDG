@@ -9,6 +9,7 @@ import trybin.fdg.context.DataGenerateContext;
 import trybin.fdg.entity.VerificationColumns;
 import trybin.fdg.entity.VerificationTable;
 import trybin.fdg.entity.batchconfig.Value;
+import trybin.fdg.exception.DataGenerateException;
 import trybin.fdg.service.SqlExecuteService;
 import trybin.fdg.service.VerificationConfigService;
 
@@ -44,6 +45,10 @@ public class MysqlVerificationConfigServiceImpl implements VerificationConfigSer
                 exceptionContainer.add("在数据库中没有找到 " + tableName + " 表，请检查配置。");
             }
         });
+        // 校验表后，有异常直接抛出
+        if (exceptionContainer == null) {
+            return exceptionContainer;
+        }
 
         Map<String, Value> valuesContainer = dataGenerateContext.getValuesContainer();
         String findVerificationColumnSql = "SELECT\n" +
@@ -69,6 +74,10 @@ public class MysqlVerificationConfigServiceImpl implements VerificationConfigSer
                 Object length = verificationColumnsContainer.get(columnName).getLength();
                 if (length != null) {
                     int i = ((BigInteger) length).intValue();
+                    if (count == null) {
+                        log.error("程序执行错误，没有根据表名：{}，找到所需插入数据量。", tableName);
+                        throw new DataGenerateException("程序执行错误，没有根据表名："+ tableName +"，找到所需插入数据量");
+                    }
                     if (count > Math.pow(10 ,i)){
                         log.error("所传入数据量 {} ，超过 {} 列最大长度 {}。", count, columnName, i);
                         exceptionContainer.add("所传入数据量 "+ count +" ，超过 "+ columnName +" 列最大长度 "+ i +"。");
