@@ -27,6 +27,7 @@ public class SqlServerVerificationConfigServiceImpl implements VerificationConfi
     @Autowired
     SqlExecuteService sqlExecuteService;
 
+
     @Override
     public List<String> execute(DataGenerateContext dataGenerateContext) {
         List<String> exceptionContainer = new ArrayList<>();
