@@ -1,6 +1,8 @@
 package trybin.fdg.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import trybin.fdg.context.DataGenerateContext;
@@ -8,6 +10,8 @@ import trybin.fdg.entity.Columns;
 import trybin.fdg.entity.batchconfig.Value;
 import trybin.fdg.enums.DATE_TYPE;
 import trybin.fdg.service.BuildCreateSqlService;
+import trybin.fdg.service.SqlExecuteService;
+import trybin.fdg.util.DataGenerateUtil;
 import trybin.fdg.util.DateUtils;
 
 import java.util.ArrayList;
@@ -20,7 +24,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author TryBin
  */
 @Component("MySQLBuildCreateSqlService")
+@Slf4j
 public class MysqlBuildCreateSqlServiceImpl implements BuildCreateSqlService {
+
+    @Autowired
+    private SqlExecuteService sqlExecuteService;
 
     @Override
     public List<String> execute(List<Columns> colNames, Set<String> keys, DataGenerateContext dataGenerateContext) {
@@ -32,9 +40,16 @@ public class MysqlBuildCreateSqlServiceImpl implements BuildCreateSqlService {
         if (count % sqlValuesCount != 0) {
             realCount++;
         }
-        List<String> insertSqlBach = new ArrayList<>();
+        List<String> insertSqlBach = new ArrayList<>(100000);
         for (Long i = 0L; i < realCount; i++) {
             insertSqlBach.add(createInsertSql(colNames, keys, dataGenerateContext, userDefinedValueContainer));
+            if (insertSqlBach.size() >= 100000){
+                log.info("考虑超过最大堆栈，临时插入数据....");
+                long start = System.currentTimeMillis();
+                DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
+                log.info("临时插入完成，耗时 {} s。", (System.currentTimeMillis() - start) / 1000D);
+                insertSqlBach = new ArrayList<>(100000);
+            }
         }
         return insertSqlBach;
     }

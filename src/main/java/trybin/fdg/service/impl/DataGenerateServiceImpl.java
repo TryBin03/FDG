@@ -109,7 +109,9 @@ public class DataGenerateServiceImpl implements DataGenerateService {
         }
 
         log.info("数据生成中...");
+        log.info("数据插入中...");
         long dataForm = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         List<String> insertSqlBach = new ArrayList<>();
         Map<String, Map<String, List<Columns>>> tableStructureContainer = dataGenerateContext.getTableStructureContainer();
         Map<String, Map<String, List<Columns>>> keyColumnsContainer = dataGenerateContext.getKeyColumnsContainer();
@@ -124,8 +126,6 @@ public class DataGenerateServiceImpl implements DataGenerateService {
             size.addAndGet(context.getIndex().get());
         });
         log.info("数据生成完成，共生成 {} 条，花费时间：{} s。", size, (System.currentTimeMillis() - dataForm) / 1000D);
-        log.info("数据插入中...");
-        long start = System.currentTimeMillis();
         DataGenerateUtil.insertBatch(sqlExecuteService, insertSqlBach);
         log.info("数据插入完成，共生成 {} 条，花费时间：{} s", size, (System.currentTimeMillis() - start) / 1000D);
     }
