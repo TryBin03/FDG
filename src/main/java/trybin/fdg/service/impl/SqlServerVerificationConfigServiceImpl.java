@@ -52,7 +52,7 @@ public class SqlServerVerificationConfigServiceImpl implements VerificationConfi
         String findVerificationColumnSql = "SELECT\n" +
                 "    col.TABLE_SCHEMA+'.'+col.TABLE_NAME+'.'+col.COLUMN_NAME AS COLUMNID,\n" +
                 "    col.COLUMN_NAME                      AS COLUMNNAME,\n" +
-                "    col.DATE_TYPE,\n" +
+                "    col.DATA_TYPE,\n" +
                 "    COALESCE(col.CHARACTER_MAXIMUM_LENGTH,col.NUMERIC_PRECISION) AS LENGTH\n" +
                 "FROM\n" +
                 "    INFORMATION_SCHEMA.COLUMNS col";

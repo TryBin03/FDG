@@ -49,7 +49,7 @@ public class MysqlVerificationConfigServiceImpl implements VerificationConfigSer
         String findVerificationColumnSql = "SELECT\n" +
                 "    CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) COLUMNID,\n" +
                 "    COLUMN_NAME                                           COLUMNNAME,\n" +
-                "    DATE_TYPE,\n" +
+                "    DATA_TYPE,\n" +
                 "    CAST(IFNULL(CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION) AS UNSIGNED )    LENGTH\n" +
                 "FROM\n" +
                 "    information_schema.columns\n" +
